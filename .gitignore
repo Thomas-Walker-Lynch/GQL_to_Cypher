@@ -1,0 +1,8 @@
+/env/
+library/
+machine_fodder/
+temporary/
+*~
+*.o
+a.out
+

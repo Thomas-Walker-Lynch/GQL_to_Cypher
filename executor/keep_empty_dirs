@@ -1,0 +1,2 @@
+# git does not keep empty directories
+find .  -type d -exec touch {}/.githolder \;
