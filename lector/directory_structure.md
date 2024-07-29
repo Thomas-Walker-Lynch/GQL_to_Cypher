@@ -54,5 +54,18 @@ It is a stuffy way to say `processed_by` the `reader`.  At the top level directo
 the lector is typically the project manager. In the developer's directory it is
 typically the developer.  In general it is anyone who reads the docs.
 
+# Hidden Files
+
+In my humble opinion that git uses hidden files is unfortunate. In general I
+find hidden files in shared projects to be a bad idea. The approach of using a
+symbolic link to give hidden files visible names creates a maintenance 
+problem. The idea of setting explicit parameters for git can be used to
+address the git hidden files, but it does not expose other hidden files.
+There is also an issue of coordinating with other team members who want
+hidden files. Hence, a general solution that solves all these issues is
+to alias `ls` to `ls -a`, which is done in the initialization file
+for the project.
+
+
 <!--  LocalWords:  lector
  -->
