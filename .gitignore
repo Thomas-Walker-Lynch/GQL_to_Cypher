@@ -1,3 +1,6 @@
+#note also the .gitignore files in the tool and developer directories and any
+# other directory that might have one.
+
 temporary/
 *~
 a.out
