@@ -4,11 +4,16 @@ script_path="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 project_root="${script_path%/*}"
 export PROJECT=$(basename "$project_root")
 
-# Set PATH to include tool/executor
-export PATH="$project_root/tool/executor:$PATH"
+# Set JAVA_HOME
+export JAVA_HOME="$project_root/tool/jdk-17.0.2+8"
+
+# Set PATH to include tool/executor and JAVA_HOME/bin
+export PATH="$JAVA_HOME/bin:$project_root/tool/executor:$PATH"
 
 # Set environment variables for ANTLR
 export CLASSPATH=".:$project_root/tool/executor/antlr-4.9.2-complete.jar:$CLASSPATH"
 
 alias ls="ls -a"
 cd "$project_root/developer"
+
+echo $0 "complete"

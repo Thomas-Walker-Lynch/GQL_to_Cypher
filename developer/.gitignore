@@ -1,2 +1,17 @@
+# Ignore intermediate build directories and files
+/jvm/
+/javac/*.class
+/javac/*.java
+
+# Ignore the generated ANTLR files
+/javac/antlr/
+
+# Ignore build directories for other tools
 /linker/
 /machine/
+
+/compiled/
+/temporary/
+/experiment/
+/deprecated/
+/test/

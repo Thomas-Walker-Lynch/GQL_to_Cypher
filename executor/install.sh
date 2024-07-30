@@ -8,7 +8,7 @@ PLATFORM="Fedora"
 
 # Define the versions and URLs for the JDK and ANTLR
 JDK_VERSION="17.0.2"
-JDK_URL="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.2%2B8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.2_8.tar.gz"
+JDK_URL="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.2+8/OpenJDK17U-jdk_x64_linux_hotspot_17.0.2_8.tar.gz"
 ANTLR_VERSION="4.9.2"
 ANTLR_URL="https://www.antlr.org/download/antlr-$ANTLR_VERSION-complete.jar"
 
@@ -49,11 +49,7 @@ fi
 
 # Set JAVA_HOME and update PATH to use the local JDK
 export JAVA_HOME="$jdk_dir"
-export PATH="$JAVA_HOME/bin:$PATH"
-
-# Move the JDK binaries to the tool/executor directory
-mv "$JAVA_HOME/bin/"* "$project_root/tool/executor/" || handle_error
-rm -rf "$JAVA_HOME/bin"
+export PATH="$JAVA_HOME/bin:$project_root/tool/executor:$PATH"
 
 # Download ANTLR jar file and place it in the tool/executor directory
 curl -o "$project_root/tool/executor/antlr-$ANTLR_VERSION-complete.jar" "$ANTLR_URL" || handle_error
@@ -69,7 +65,3 @@ export CLASSPATH=".:$project_root/tool/executor/antlr-$ANTLR_VERSION-complete.ja
 export PATH="$PATH:$project_root/tool/executor"
 
 echo "Installation complete. Java and ANTLR have been installed successfully."
-# echo "To set the environment variables for future sessions, add the following lines to your ~/.bashrc or ~/.bash_profile:"
-# echo "export JAVA_HOME=\"$JAVA_HOME\""
-# echo "export PATH=\"$JAVA_HOME/bin:$PATH:$project_root/tool/executor\""
-# echo "export CLASSPATH=\"$CLASSPATH\""

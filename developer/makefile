@@ -1,31 +1,77 @@
-# Used for C or C++ files along with the makefile found in the 'resource' project
 
-# how to run make
-SHELL=/bin/bash
-RESOURCE := /var/user_data/Thomas-developer/resource/development
+# FL = File List
 
-# picks up globally defined variables, that can be used/modified while defining local variables
-include $(RESOURCE)/library/makefile-environment
+Island        =    land    island    # value has embedded and trailing spaces
 
-ENVDIR=../env
-DOCDIR=lector
-EXECDIR=machine
-LIBDIR=linker
-SRCDIR=compiler
-TESTDIR=test
-TMPDIR=temporary
-TRYDIR=experiment
+ANTLR_JAR     = ../tool/executor/antlr-4.9.2-complete.jar
 
-C=gcc
+ANTLR_IN_DIR  = ANTLR
+ANTLR_OUT_DIR = javac/antlr
+ANTLR_IN_FL   = $(wildcard $(ANTLR_IN_DIR)/*.g4)
+ANTLR_OUT_FL  = $(patsubst %.g4,$(ANTLR_OUT_DIR)/%.java,$(ANTLR_IN_FL))
 
-CFLAGS= -include "compiler/environment.h" -std=gnu18 -Werror -O0 -ggdb -DDEBUG -DDEBUGDB -I$(SRCDIR) -I$(RESOURCE)/include -I$(ENVDIR)/include -I/usr/include/libevdev-1.0
-LINKFLAGS=-L$(LIBDIR) -L$(RESCOURCE)/lib/ -L$(ENVDIR)/lib/ -L/usr/lib -L/usr/lib64 -l$(PROJECT) -levdev
+JAR         = $(JAVA_HOME)/bin/jar
+JAVAC       = $(JAVA_HOME)/bin/javac
+JAVA_IN_DIR = javac
+JAVA_IN_FL  = $(wildcard $(JAVA_IN_DIR)/*.java) $(ANTLR_OUT_FL)
+JVM_IN_DIR  = jvm
 
 
-#--------------------------------------------------------------------------------
-# import the rules
-#
+# programs we are creating
+GQL_SYNTAX_TREE = GQL_syntax_tree
+#...
+OUT_FL = $(JVM_IN_DIR)/$(GQL_SYNTAX_TREE).jar
 
-# the dash prefix means to ignore include errors, the DEPFILE might not exist yet
--include $(DEPFILE)
-include $(RESOURCE)/library/makefile
+
+.PHONY: all
+all: grammar program
+
+.PHONY: program
+program: setup $(OUT_FL)
+
+.PHONY: grammar
+grammar: setup $(ANTLR_OUT_FL)
+
+.PHONY: variable
+variable:
+	$(info ISLAND is '$(ISLAND)')
+	$(info JAVAC is '$(JAVAC)')
+	$(info JAR is '$(JAR)')
+	$(info ANTLR_JAR is '$(ANTLR_JAR)')
+	$(info JAVA_IN_DIR is '$(JAVA_IN_DIR)')
+	$(info JVM_IN_DIR is '$(JVM_IN_DIR)')
+	$(info ANTLR_IN_DIR is '$(ANTLR_IN_DIR)')
+	$(info ANTLR_OUT_DIR is '$(ANTLR_OUT_DIR)')
+	$(info JAVA_IN_FL is '$(JAVA_IN_FL)')
+	$(info ANTLR_IN_FL is '$(ANTLR_IN_FL)')
+	$(info ANTLR_OUT_FL is '$(ANTLR_OUT_FL)')
+
+.PHONY: version
+version:
+	@ $(JAVAC) --version
+	@ $(JAR) --version
+	$(info ANTLR_JAR is '$(ANTLR_JAR)')
+	@ make -v | head -n 1
+
+.PHONY: setup
+setup:
+	mkdir -p $(JAVA_IN_DIR)/gql
+	mkdir -p $(JVM_IN_DIR)
+	mkdir -p $(ANTLR_OUT_DIR)
+
+.PHONY: clean
+clean:
+	rm -rf $(JVM_IN_DIR)/*
+	rm -rf $(ANTLR_OUT_DIR)/*.java
+
+# Compile ANTLR grammars
+$(ANTLR_OUT_DIR)/%.java: $(ANTLR_IN_DIR)/%.g4
+	java -jar $(ANTLR_JAR) -Dlanguage=Java -o $(ANTLR_OUT_DIR) $<
+
+# Compile Java sources
+$(JVM_IN_DIR)/%.class: $(JAVA_IN_DIR)/gql/%.java $(ANTLR_OUT_FL)
+	$(JAVAC) -d $(JVM_IN_DIR) -cp $(ANTLR_JAR) $<
+
+# Create jar file
+$(JVM_IN_DIR)/$(GQL_SYNTAX_TREE).jar: $(patsubst $(JAVA_IN_DIR)/gql/%.java,$(JVM_IN_DIR)/%.class,$(JAVA_IN_FL))
+	$(JAR) cvf $@ -C $(JVM_IN_DIR) .

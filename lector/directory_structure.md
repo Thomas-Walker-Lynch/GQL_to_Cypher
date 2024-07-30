@@ -9,6 +9,11 @@ These are the properties, in order that we prefer to use them:
 * `category_processed_by`
 * `purpose_of`
 
+The `processed_by` property is also known as `input`, which in turn is
+often shortened to `in`.
+
+
+
 When source files of different types are mixed in a directory, we generalize 
 to the category.  A mix of Rust and C files would be called `compiler` as the 
 category of the programs used to process the files. A mix of interpreted scripts
@@ -32,6 +37,20 @@ A document is read by a person, so a document is processed by a `reader`.
 In cases where knowing the agent that will process the file does not give the
 user insight as to what the file is for, we drop down to the `purpose_of`
 property.
+
+# Implicit Property Name
+
+When naming a directory we typically don't add the property name, but only
+put its value. Hence the directory that contains files to be processed
+by the `javac` program will typically be called `javac`.  When we need to include the
+property name, we can add a suffix. `javac_input`. 
+
+Sometimes a directory name will be held in a variable, and we need to further
+distinguish the fact that the variable is referring to a directory. Say for
+example a variable that holds the name of the directory that holds files
+to be processed by `javac`, can be called `javac_input_directory`, and if
+that is too long,  `javac_in_dir` is typically used.
+
 
 # Why directory names are often singular
 
