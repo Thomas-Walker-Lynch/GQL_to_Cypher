@@ -1,7 +1,7 @@
 
 # FL = File List
 
-Island        =    land    island    # value has embedded and trailing spaces
+ISLAND        =    land    island    # value has embedded and trailing spaces
 
 ANTLR_JAR     = ../tool/executor/antlr-4.9.2-complete.jar
 
@@ -55,7 +55,7 @@ version:
 
 .PHONY: setup
 setup:
-	mkdir -p $(JAVA_IN_DIR)/gql
+	mkdir -p $(JAVA_IN_DIR)
 	mkdir -p $(JVM_IN_DIR)
 	mkdir -p $(ANTLR_OUT_DIR)
 
