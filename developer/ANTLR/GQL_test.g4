@@ -1,4 +1,4 @@
-grammar GQL;
+grammar GQL_test;
 
 root: query+ EOF;
 

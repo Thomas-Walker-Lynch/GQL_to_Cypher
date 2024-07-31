@@ -1,4 +1,4 @@
-grammar GQL;
+grammar GQL_2024;
 
 options { caseInsensitive = true; }
 

@@ -6,15 +6,16 @@ project_root="${script_path%/*}"
 
 # Function to handle errors
 handle_error() {
-    echo "Error occurred during cleaning. Exiting."
-    exit 1
+  echo "Error occurred during cleaning. Exiting."
+  exit 1
 }
 
+# Call specific clean scripts
+./clean_Java.sh || { echo "Java cleanup failed."; }
+./clean_ANTLR.sh || { echo "ANTLR cleanup failed."; }
+
 # Remove the contents of the tool directory while preserving the directory itself and .gitignore
-find "$project_root/tool" -mindepth 1 ! -name ".gitignore" -exec rm -rf {} + || handle_error
+find "$project_root/tool" -mindepth 1 -maxdepth 1 -not -name ".gitignore" -not -name "upstream" -not -type l -exec rm -rf {} + || handle_error
+find "$project_root/tool" -maxdepth 1 -type l -exec rm -f {} + || handle_error
 
-# Unset environment variables if they are set
-[ -n "$JAVA_HOME" ] && unset JAVA_HOME
-[ -n "$CLASSPATH" ] && unset CLASSPATH
-
-echo "Project clean complete. All tools have been removed."
+echo 'Tool directory cleanup complete. Run `clean_upstream.sh` to remove cached upstream files.'
