@@ -1,0 +1,10 @@
+{
+  person(id: "123") {
+    name
+    age
+    friends {
+      name
+      age
+    }
+  }
+}
