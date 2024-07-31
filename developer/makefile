@@ -1,4 +1,4 @@
-
+# GQL_to_Cypher makefile
 
 # Embedded and trailing spaces are included in the value, there are
 # 4 of each used here. Leading spaces are not included.  If there is a comment
@@ -11,6 +11,7 @@ ISLAND =    land    island
 JAVA_COMP   = $(JAVA_HOME)/bin/javac
 JAVA_INTERP = $(JAVA_HOME)/bin/java
 JAR         = $(JAVA_HOME)/bin/jar
+#ANTLR_JAR   = $(REPO_HOME)/tool/executor/antlr-4.11.1-complete.jar
 
 # FL = File List
 ANTLR_IN_DIR  = ANTLR
@@ -46,12 +47,20 @@ grammar: setup $(ANTLR_OUT_FL)
 .PHONY: variable
 variable:
 	$(info ISLAND is '$(ISLAND)')
+
+	$(info JAVA_HOME is '$(JAVA_HOME)')
+	$(info CLASSPATH is '$(CLASSPATH)')
 	$(info ANTLR_JAR is '$(ANTLR_JAR)')
+
+	$(info JAVA_COMP is '$(JAVA_COMP)')
+	$(info JAVA_INTERP is '$(JAVA_INTERP)')
+	$(info JAR is '$(JAR)')
+
 	$(info ANTLR_IN_DIR is '$(ANTLR_IN_DIR)')
 	$(info ANTLR_OUT_DIR is '$(ANTLR_OUT_DIR)')
 	$(info ANTLR_IN_FL is '$(ANTLR_IN_FL)')
 	$(info ANTLR_OUT_FL is '$(ANTLR_OUT_FL)')
-	$(info JAVA_COMP is '$(JAVA_COMP)')
+
 	$(info JAVA_IN_DIR is '$(JAVA_IN_DIR)')
 	$(info JVM_IN_DIR is '$(JVM_IN_DIR)')
 
@@ -62,7 +71,8 @@ variable:
 	$(info JAVA_OUT_FL0 is '$(JAVA_OUT_FL0)')
 	$(info JAVA_OUT_FL1 is '$(JAVA_OUT_FL1)')
 	$(info JAVA_OUT_FL is '$(JAVA_OUT_FL)')
-	$(info JAR is '$(JAR)')
+
+
 
 .PHONY: version
 version:
@@ -75,6 +85,7 @@ version:
 setup:
 	mkdir -p $(ANTLR_IN_DIR) $(ANTLR_OUT_DIR) $(JAVA_IN_DIR) $(JVM_IN_DIR)
 	mkdir -p deprecated  experiment  lector temporary test
+
 
 .PHONY: clean
 clean:
