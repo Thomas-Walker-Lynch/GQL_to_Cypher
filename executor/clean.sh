@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-# Get the project root path by removing 'executor' from the script path
-script_path="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-project_root="${script_path%/*}"
+# Check if REPO_HOME is set, if not exit with an error
+if [ -z "$REPO_HOME" ]; then
+  echo "REPO_HOME is not set. Please initialize the environment."
+  exit 1
+fi
 
 # Function to handle errors
 handle_error() {
@@ -11,11 +13,11 @@ handle_error() {
 }
 
 # Call specific clean scripts
-./clean_Java.sh || { echo "Java cleanup failed."; }
-./clean_ANTLR.sh || { echo "ANTLR cleanup failed."; }
+"$REPO_HOME/executor/clean_Java" || { echo "Java cleanup failed."; }
+"$REPO_HOME/executor/clean_ANTLR" || { echo "ANTLR cleanup failed."; }
 
 # Remove the contents of the tool directory while preserving the directory itself and .gitignore
-find "$project_root/tool" -mindepth 1 -maxdepth 1 -not -name ".gitignore" -not -name "upstream" -not -type l -exec rm -rf {} + || handle_error
-find "$project_root/tool" -maxdepth 1 -type l -exec rm -f {} + || handle_error
+find "$REPO_HOME/tool" -mindepth 1 -maxdepth 1 -not -name ".gitignore" -not -name "upstream" -not -type l -exec rm -rf {} + || handle_error
+find "$REPO_HOME/tool" -maxdepth 1 -type l -exec rm -f {} + || handle_error
 
-echo 'Tool directory cleanup complete. Run `clean_upstream.sh` to remove cached upstream files.'
+echo "Tool directory cleanup complete."

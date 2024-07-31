@@ -1,12 +1,13 @@
 
 
-# Use `make variable` to print the value assigned to the variable ISLAND.
-# Spaces in and after non-white characters are part of the value.
-# This includes trailing spaces on the line, and space leading to a comment marker.
-# Note the next line has 4 trailing spaces after 'island':
+# Embedded and trailing spaces are included in the value, there are
+# 4 of each used here. Leading spaces are not included.  If there is a comment
+# starting with a hash, the trailing spaces leading up to are included.
+# Use `make variable` to print the value assigned to the variables, including
+# ISLAND. 
 ISLAND =    land    island    
 
-ANTLR_JAR   = ../tool/executor/antlr-4.9.2-complete.jar
+# JAVA_HOME, CLASSPATH, and ANTLR_JAR variables come from `env_dev`
 JAVA_COMP   = $(JAVA_HOME)/bin/javac
 JAVA_INTERP = $(JAVA_HOME)/bin/java
 JAR         = $(JAVA_HOME)/bin/jar

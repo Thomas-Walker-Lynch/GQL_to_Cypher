@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# Check if REPO_HOME is set, if not exit with an error
+if [ -z "$REPO_HOME" ]; then
+  echo "REPO_HOME is not set. Please initialize the environment."
+  exit 1
+fi
+
+# Function to handle errors
+handle_error() {
+  echo "Error occurred during upstream cleanup. Exiting."
+  exit 1
+}
+
+# Check if the upstream directory exists
+if [ -d "$REPO_HOME/tool/upstream" ]; then
+  echo "Cleaning up upstream directory..."
+  find "$REPO_HOME/tool/upstream" -mindepth 1 -maxdepth 1 -not -type l -exec rm -rf {} + || handle_error
+  find "$REPO_HOME/tool/upstream" -maxdepth 1 -type l -exec rm -f {} + || handle_error
+else
+  echo "Upstream directory does not exist."
+fi
+
+echo "Upstream cleanup complete."

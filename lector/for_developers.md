@@ -8,8 +8,8 @@ to use the `repo` command found in RT's `resource` project. The `repo` command
 will start a new shell with the proper environment variables setup for the 
 project, and nothing else.
 
-A project can also be entered by sourcing `use_tool` by running the command
-`. exector/use_tool` in a shell.  `use_tool` is analogous to `activate` in Python.
+A project can also be entered by sourcing `env_dev` by running the command
+`. exector/env_dev` in a shell.  `use_tool` is analogous to `activate` in Python.
 
 
 

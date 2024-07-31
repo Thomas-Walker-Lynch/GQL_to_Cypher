@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+#
+# GQL_to_Cypher/
+# ├── tool/
+# │   ├── executor/
+# │   │   └── antlr-4.11.1-complete.jar  (copied from upstream)
+# │   ├── jdk-22.0.1+8/
+# │   ├── upstream/ (cache of downloaded data)
+# │   │   └── antlr-4.11.1-complete.jar
+# │   └── .gitignore
+# └── ...
+
+
+# Check if REPO_HOME is set, if not exit with an error
+if [ -z "$REPO_HOME" ]; then
+  echo "REPO_HOME is not set. Please initialize the environment."
+  exit 1
+fi
+
+# Define the version and URL for ANTLR, if you change the version be sure to update the URL
+ANTLR_VERSION="4.11.1"
+ANTLR_URL="https://www.antlr.org/download/antlr-4.11.1-complete.jar"
+
+# Create the upstream directory if it doesn't exist
+mkdir -p "$REPO_HOME/tool/upstream"
+mkdir -p "$REPO_HOME/tool/executor"
+
+# Download the ANTLR JAR file to the upstream directory
+antlr_jar="$REPO_HOME/tool/upstream/antlr-$ANTLR_VERSION-complete.jar"
+if [ ! -f "$antlr_jar" ]; then
+  echo "Downloading ANTLR..."
+  curl -L -o "$antlr_jar" "$ANTLR_URL"
+fi
+
+if [ ! -s "$antlr_jar" ]; then
+  echo "ANTLR download failed. Exiting."
+  exit 1
+fi
+
+# Move the ANTLR JAR file to the executor directory
+cp "$antlr_jar" "$REPO_HOME/tool/executor/"
+
+echo "ANTLR installation complete."

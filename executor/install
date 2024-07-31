@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+# Check if REPO_HOME is set, if not exit with an error
+if [ -z "$REPO_HOME" ]; then
+  echo "REPO_HOME is not set. Please initialize the environment."
+  exit 1
+fi
+
+# Call install scripts and handle errors
+"$REPO_HOME/executor/install_Java" || { echo "Java installation failed."; }
+"$REPO_HOME/executor/install_ANTLR" || { echo "ANTLR installation failed."; exit 1; }
+
+# Create symbolic link
+ln -sfn "$REPO_HOME/tool/executor" "$REPO_HOME/tool/bin"
+
+echo "All installations complete. Java and ANTLR have been installed successfully."

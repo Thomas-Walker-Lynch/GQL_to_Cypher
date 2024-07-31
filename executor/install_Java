@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#
+# GQL_to_Cypher/
+# ├── tool/
+# │   ├── executor/
+# │   │   └── antlr-4.11.1-complete.jar
+# │   ├── jdk-22.0.1+8/
+# │   │   ├── bin/
+# │   │   ├── conf/
+# │   │   ├── include/
+# │   │   ├── jmods/
+# │   │   ├── legal/
+# │   │   ├── lib/
+# │   │   ├── release
+# │   │   └── ...
+# │   ├── upstream/
+# │   │   ├── antlr-4.11.1-complete.jar
+# │   │   └── jdk-22.0.1.tar.gz
+# │   └── .gitignore
+# └── ...
+
+# Check if REPO_HOME is set, if not exit with an error
+if [ -z "$REPO_HOME" ]; then
+  echo "REPO_HOME is not set. Please initialize the environment."
+  exit 1
+fi
+
+# Define the version and URL for the JDK, if you change the version be sure to update the URL
+JDK_VERSION="22.0.1"
+JDK_URL="https://github.com/adoptium/temurin22-binaries/releases/download/jdk-22.0.1%2B8/OpenJDK22U-jdk_x64_linux_hotspot_22.0.1_8.tar.gz"
+
+# Create the upstream directory if it doesn't exist
+mkdir -p "$REPO_HOME/tool/upstream"
+mkdir -p "$REPO_HOME/tool"
+
+# Download the JDK to the upstream directory
+jdk_tar="$REPO_HOME/tool/upstream/jdk-$JDK_VERSION.tar.gz"
+if [ ! -f "$jdk_tar" ]; then
+  echo "Downloading JDK..."
+  curl -L -o "$jdk_tar" "$JDK_URL"
+fi
+
+if [ ! -s "$jdk_tar" ]; then
+  echo "JDK download failed. Exiting."
+  exit 1
+fi
+
+echo "Extracting JDK..."
+tar -xzf "$jdk_tar" -C "$REPO_HOME/tool" || { echo "JDK extraction failed. Exiting."; exit 1; }
+
+# Find the extracted JDK directory
+jdk_dir=$(find "$REPO_HOME/tool" -maxdepth 1 -type d -name "jdk-*" | head -n 1)
+if [ -z "$jdk_dir" ]; then
+  echo "JDK extraction failed. Exiting."
+  exit 1
+fi
+
+# Set JAVA_HOME and update PATH to use the local JDK
+export JAVA_HOME="$jdk_dir"
+export PATH="$JAVA_HOME/bin:$PATH"
+
+# Test Java installation
+if ! java -version > /dev/null 2>&1; then
+  echo "Java version check failed."
+  exit 1
+fi
+
+echo "Java installation complete."
