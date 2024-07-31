@@ -1,5 +1,5 @@
-grammar GQL_2024;
-
+grammar GQL_20240412;
+        
 options { caseInsensitive = true; }
 
 // 6 <GQL-program>
