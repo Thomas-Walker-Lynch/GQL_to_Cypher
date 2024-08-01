@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+output_file="combined_output.txt"
+> "$output_file"
+
+for file in "$1"/*; do
+  if [ -f "$file" ]; then
+    echo "Filename: $(basename "$file")" >> "$output_file"
+    echo "----------------------------------------" >> "$output_file"
+    cat "$file" >> "$output_file"
+    echo -e "\n\n" >> "$output_file"
+  fi
+done
+
+echo "Files have been concatenated into $output_file"

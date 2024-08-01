@@ -1,0 +1,62 @@
+Seems to me, that creating a disjoint sub graph is identical to creating a new graph.  Perhaps we can work with that.  Why don't we create a master index of disjoint subgraphs in a header, then when a new graph is made we will add an entry in the index. 
+ChatGPT
+Creating a master index of disjoint subgraphs and managing them within a single Neo4j database is a practical approach. By using labels or properties to differentiate subgraphs, you can effectively manage multiple logical graphs within a single physical graph.
+
+    Here's a step-by-step approach to implement this:
+
+    Step 1: Create the Master Index
+    First, create a master index node that will store references to all disjoint subgraphs.
+
+    cypher
+
+    MERGE (index:GraphIndex {name: 'MasterIndex'})
+    Step 2: Create a New Graph
+    When creating a new graph, add an entry to the master index.
+
+    cypher
+
+    // Create a new graph and add an entry to the master index
+    MERGE (index:GraphIndex {name: 'MasterIndex'})
+    CREATE (graph:Graph {name: 'myNewGraph'})
+    MERGE (index)-[:CONTAINS]->(graph)
+
+    // Create nodes and relationships within the new graph
+    CREATE (graph)-[:HAS_NODE]->(:Person:myNewGraph {name: 'Alice'})
+    CREATE (graph)-[:HAS_NODE]->(:Person:myNewGraph {name: 'Bob'})
+    Step 3: Querying Subgraphs
+    To query a specific subgraph, use the label or properties associated with that subgraph.
+
+    cypher
+
+    MATCH (index:GraphIndex {name: 'MasterIndex'})-[:CONTAINS]->(graph:Graph {name: 'myNewGraph'})-[:HAS_NODE]->(person:Person:myNewGraph)
+    RETURN person.name
+    Step 4: Adding More Nodes and Relationships to a Subgraph
+    To add more nodes and relationships to an existing subgraph, refer to the subgraph by its label or properties.
+
+    cypher
+
+    MATCH (graph:Graph {name: 'myNewGraph'})
+    CREATE (graph)-[:HAS_NODE]->(:Person:myNewGraph {name: 'Charlie'})
+    CREATE (person:Person:myNewGraph {name: 'Alice'})-[:KNOWS]->(person:Person:myNewGraph {name: 'Charlie'})
+    Example: Full Workflow
+    Creating a New Graph
+    cypher
+
+    MERGE (index:GraphIndex {name: 'MasterIndex'})
+    CREATE (graph:Graph {name: 'myNewGraph'})
+    MERGE (index)-[:CONTAINS]->(graph)
+    CREATE (graph)-[:HAS_NODE]->(:Person:myNewGraph {name: 'Alice'})
+    CREATE (graph)-[:HAS_NODE]->(:Person:myNewGraph {name: 'Bob'})
+    Querying a Subgraph
+    cypher
+
+    MATCH (index:GraphIndex {name: 'MasterIndex'})-[:CONTAINS]->(graph:Graph {name: 'myNewGraph'})-[:HAS_NODE]->(person:Person:myNewGraph)
+    RETURN person.name
+    Adding to a Subgraph
+    cypher
+
+    MATCH (graph:Graph {name: 'myNewGraph'})
+    CREATE (graph)-[:HAS_NODE]->(:Person:myNewGraph {name: 'Charlie'})
+    MATCH (alice:Person:myNewGraph {name: 'Alice'})
+    MATCH (charlie:Person:myNewGraph {name: 'Charlie'})
+    CREATE (alice)-[:KNOWS]->(charlie)

@@ -1,0 +1,4 @@
+https://github.com/iftahro/Neo4NBA
+
+It appears these Cypher examples also conform to GQL syntax.
+
