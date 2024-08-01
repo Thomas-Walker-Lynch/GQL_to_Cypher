@@ -9,6 +9,7 @@
 ISLAND =    land    island    
 
 # JAVA_HOME, CLASSPATH, and ANTLR_JAR variables come from `env_dev`
+
 JAVA_COMP   = $(JAVA_HOME)/bin/javac
 JAVA_INTERP = $(JAVA_HOME)/bin/java
 JAR         = $(JAVA_HOME)/bin/jar
@@ -20,6 +21,8 @@ ANTLR_OUT_DIR_DIR = javac
 ANTLR_OUT_DIR = javac/ANTLR
 ANTLR_IN_FL  = $(wildcard $(ANTLR_IN_DIR)/*.g4)
 ANTLR_OUT_FL = $(patsubst $(ANTLR_IN_DIR)/%.g4,$(ANTLR_OUT_DIR)/%.java,$(ANTLR_IN_FL))
+CLASSPATH_LOCAL := $(CLASSPATH):$(ANTLR_OUT_DIR)
+
 
 JAVA_IN_DIR = javac
 JVM_IN_DIR  = jvm
@@ -34,9 +37,9 @@ JAVA_OUT_FL  = $(JAVA_OUT_FL0) $(JAVA_OUT_FL1)
 
 
 # programs we are creating
-GQL_SYNTAX_TREE = GQL_syntax_tree
+SYNTAX_TREE_20240412 = SyntaxTree20240412
 #...
-OUT_FL = $(JVM_IN_DIR)/$(GQL_SYNTAX_TREE).jar
+OUT_FL = $(JVM_IN_DIR)/$(SYNTAX_TREE_20240412).jar
 .PHONY: all
 all: grammar program
 
@@ -63,6 +66,7 @@ variable:
 	$(info ANTLR_OUT_DIR_DIR is '$(ANTLR_OUT_DIR_DIR)')
 	$(info ANTLR_IN_FL is '$(ANTLR_IN_FL)')
 	$(info ANTLR_OUT_FL is '$(ANTLR_OUT_FL)')
+	$(info CLASSPATH_LOCAL is '$(CLASSPATH_LOCAL)')
 
 	$(info JAVA_IN_DIR is '$(JAVA_IN_DIR)')
 	$(info JVM_IN_DIR is '$(JVM_IN_DIR)')
@@ -121,12 +125,9 @@ clean:
 $(ANTLR_OUT_DIR)/%.java: $(ANTLR_IN_DIR)/%.g4
 	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -o $(ANTLR_OUT_DIR_DIR) $<
 
-$(JAVA_OUT_FL0): $(JVM_IN_DIR)/%.class: $(JAVA_IN_DIR)/%.java
-	$(JAVA_COMP) -d $(JVM_IN_DIR) -cp $(ANTLR_JAR) $<
+$(JVM_IN_DIR)/%.class: $(JAVA_IN_DIR)/%.java $(ANTLR_OUT_DIR)/%.java
+	$(JAVA_COMP) -d $(JVM_IN_DIR) -cp $(CLASSPATH_LOCAL) $<
 
-$(JAVA_OUT_FL1): $(JVM_IN_DIR)/%.class: $(ANTLR_OUT_DIR)/%.java
-	$(JAVA_COMP) -d $(JVM_IN_DIR) -cp $(ANTLR_JAR) $<
-
-$(JVM_IN_DIR)/$(GQL_SYNTAX_TREE).jar: $(JAVA_OUT_FL)
+$(JVM_IN_DIR)/$(SYNTAX_TREE_20240412).jar: $(JAVA_OUT_FL)
 	$(JAR) cvf $@ -C $(JVM_IN_DIR) .
 

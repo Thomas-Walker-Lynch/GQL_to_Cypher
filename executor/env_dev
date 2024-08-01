@@ -12,11 +12,11 @@ if [ -z "$REPO_HOME" ]; then
   source "${script_path}/env_base"
 fi
 
-export JAVA_HOME="$REPO_HOME/tool/jdk-22.0.1+8"
-export CLASSPATH=".:$REPO_HOME/tool/executor/antlr-4.11.1-complete.jar:$CLASSPATH"
 export ANTLR_JAR="$REPO_HOME/tool/executor/antlr-4.11.1-complete.jar"
+export JAVA_HOME="$REPO_HOME/tool/jdk-22.0.1+8"
+export CLASSPATH="$ANTLR_JAR"
 
-export PATH="$JAVA_HOME/bin:$REPO_HOME/tool/executor:$PATH"
+export PATH="$REPO_HOME/tool/executor:$JAVA_HOME/bin:$PATH"
 
 alias ls="ls -a"
 cd "$REPO_HOME/developer"
