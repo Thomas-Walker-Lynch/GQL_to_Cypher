@@ -28,4 +28,12 @@ public class PrintVisitor extends AbstractParseTreeVisitor<String> implements GQ
     sb.append(")");
     return sb.toString();
   }
+
+  @Override
+  public String visitNonReservedWords(GQL_20240412Parser.NonReservedWordsContext ctx) {
+    // Your implementation here
+    return visitChildren(ctx);
+  }
+
+  // Implement other methods as needed
 }
