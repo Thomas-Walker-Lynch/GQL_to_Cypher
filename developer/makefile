@@ -22,6 +22,9 @@
 # to prints its value, and note the embedded and trailing spaces.
 ISLAND :=    land    island    
 
+#--------------------------------------
+# Variables from the evv_dev environment: JAVA_HOME, ANTLR_JAR
+
 #----------------------------------------
 # programs used by this makefile
 #
