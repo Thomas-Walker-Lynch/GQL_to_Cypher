@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MakeRuleNameList {
+public class PrintRuleNameList {
 
   public static void main(String[] args) {
     if (args.length != 1) {

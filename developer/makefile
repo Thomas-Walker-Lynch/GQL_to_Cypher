@@ -32,11 +32,11 @@ JAVA_ARCHIVE := $(JAVA_HOME)/bin/jar
 #----------------------------------------
 # programs being built by this makefile:
 #
-PRINT_RULE_NAME_LIST := PrintRuleNameList
-SYNTAX_TREE_TEST     := SyntaxTree_Test
-SYNTAX_TREE_20240412 := SyntaxTree_20240412
+PROGRAM_PrintRuleNameList   := executor/PrintRuleNameList
+PROGRAM_SyntaxTree_Test     := executor/SyntaxTree_Test
+PROGRAM_SyntaxTree_20240412 := executor/SyntaxTree_20240412
 
-PROGRAM_LIST         := $(PRINT_RULE_NAME_LIST) $(SYNTAX_TREE_TEST) $(SYNTAX_TREE_20240412)
+PROGRAM_FPL := $(PROGRAM_PrintRuleNameList) $(PROGRAM_SyntaxTree_Test) $(PROGRAM_SyntaxTree_20240412)
 
 #----------------------------------------
 # ANTLR environment
@@ -107,13 +107,13 @@ export CLASSPATH
 #
 
 # The general make everything targets:
-all: setup $(PROGRAM_LIST)
+all: setup $(PROGRAM_FPL)
 grammar: setup $(ANTLR_OUT_FPL)
 
 # specific programs or program versions:
-PrintRuleNameList: $(JAVA_COMP_OUT_DIR)/PrintRuleNameList.jar
-SyntaxTree_Test: $(ANTLR_OUT_SyntaxTree_Test_FPL) $(JAVA_COMP_OUT_DIR)/SyntaxTree_Test.jar
-SyntaxTree_20240412: $(ANTLR_OUT_SyntaxTree_20240412_FPL) $(JAVA_COMP_OUT_DIR)/SyntaxTree_20240412.jar
+PrintRuleNameList: $(PrintRuleNameList)
+SyntaxTree_Test: $(ANTLR_OUT_SyntaxTree_Test_FPL) $(SyntaxTree_Test)
+SyntaxTree_20240412: $(ANTLR_OUT_SyntaxTree_20240412_FPL) $(SyntaxTree_20240412)
 
 # Specific grammar targets. Run them like this:
 # > make <grammar_name>
@@ -123,15 +123,15 @@ $(foreach grammar,$(ANTLR_GRAMMAR_LIST),$(eval $(grammar): $(value ANTLR_OUT_$(g
 # Compile all the .java files.
 java: setup $(JAVA_COMP_OUT_FPL)
 
-# print out all variables within quotes so that spaces can be detected
+# prints out each variable within quotes so that spaces can be seen
 .PHONY: variable
 variable:
 	$(info ISLAND is '$(ISLAND)')
 
-	$(info PRINT_RULE_NAME_LIST is '$(PRINT_RULE_NAME_LIST)')
-	$(info SYNTAX_TREE_TEST is '$(SYNTAX_TREE_TEST)')
-	$(info SYNTAX_TREE_20240412 is '$(SYNTAX_TREE_20240412)')
-	$(info PROGRAM_LIST is '$(PROGRAM_LIST)')
+	$(info PROGRAM_PrintRuleNameList is '$(PROGRAM_PrintRuleNameList)')
+	$(info PROGRAM_SyntaxTree_Test is '$(PROGRAM_SyntaxTree_Test)')
+	$(info PROGRAM_SyntaxTree_20240412 is '$(PROGRAM_SyntaxTree_20240412)')
+	$(info PROGRAM_FPL is '$(PROGRAM_FPL)')
 
 	$(info JAVA_COMP is '$(JAVA_COMP)')
 	$(info JAVA_INTERP is '$(JAVA_INTERP)')
@@ -175,45 +175,83 @@ version:
 setup:
 	# ANTLR automatically creates $(ANTLR_OUT_DIR)
 	mkdir -p $(ANTLR_IN_DIR) $(JAVA_COMP_IN_PRIMARY_DIR) $(JVM_IN_DIR)
-	mkdir -p test deprecated  experiment  documentation temporary 
+	mkdir -p executor test deprecated experiment documentation temporary 
 
-.PHONY: clean
-clean:
-	@if [ -n "$(JVM_IN_DIR)" ]; then \
-	  echo "Cleaning $(JVM_IN_DIR)"; \
-	  rm -rf $(JVM_IN_DIR)/*; \
-	else \
-	  echo "Warning: JVM_IN_DIR is not set"; \
-	fi
-	@if [ -n "$(ANTLR_OUT_DIR)" ]; then \
-	  echo "Cleaning $(ANTLR_OUT_DIR)"; \
-	  rm -rf $(ANTLR_OUT_DIR); \
-	else \
-	  echo "Warning: ANTLR_OUT_DIR is not set"; \
-	fi
-	@if [ -d "temporary" ]; then \
-	  echo "Cleaning temporary directory"; \
-	  rm -rf temporary/*; \
-	else \
-	  echo "Warning: temporary directory does not exist"; \
-	fi
+
+# Define directories
+TEMP_DIR := temp
+GQL_DIR := gql
+
+# 1. clean:temporary  - removes files from ./temporary
+# 2. General clean targets:
+#      clean:all  - removes all things make built, and thus can be replaced by running make again.
+#      clean:all-   (minus after the all)  same as clean:all except for the program files (and their .jar if any)
+#      clean:program -  all program files, i.e. ./exector/<program>   and ./jvm/<program.jar>  for all programs.
+#      clean:class - class files
+#      clean:grammar - all generated grammar files
+     
+# 2. 
+#     clean:program:<name>
+#     similear to clean:program, but only for the named program
+
+#     clean:program+:<name>
+#     bascially clean:all but only for the named program
+
+#     clean:program-:<mame>
+#     baiscally clean:all- but only for the named program
+
+# 3. clean:grammar:<name>
+#     siimilar to clean:grammar, but only for the named grammar	
+
+# Function to handle individual cleaning
+# Accepts a single option and removes the appropriate files
+define do_clean
+  @echo "Cleaning files for option: $1"
+  if [ "$1" = "" ]; then \
+    @echo "Usage: make clean:< all[-] | |program[+/-][:<name>] | grammar[:<name>] | class | temp[orary] >" \
+  elif [ "$1" = "temporary" -o "$1" = "temp" ]; then \
+    rm -rf $(TEMP_DIR); \
+  elif [ "$1" = "all" ]; then \
+    rm -rf $(TEMP_DIR) $(ANTLR_OUT_DIR) $(JAVA_COMP_OUT_DIR) executor/*; \
+  elif [ "$1" = "all-" ]; then \
+    rm -rf $(TEMP_DIR) $(ANTLR_OUT_DIR) $(JAVA_COMP_OUT_DIR)/*.class; \
+  elif [ "$1" = "program" ]; then \
+    rm -rf $(JAVA_COMP_OUT_DIR)/*.jar executor/*; \
+  elif [ "$1" = "class" ]; then \
+    rm -rf $(JAVA_COMP_OUT_DIR)/*.class; \
+  elif [ "$1" = "grammar" ]; then \
+    rm -rf $(ANTLR_OUT_DIR); \
+  elif [[ "$1" =~ ^program:(.+)$ ]]; then \
+    rm -rf $(JAVA_COMP_OUT_DIR)/$$(basename $$(echo $$1 | cut -d: -f2)).jar executor/$$(basename $$(echo $$1 | cut -d: -f2)); \
+  elif [[ "$1" =~ ^program\+:(.+)$ ]]; then \
+    rm -rf $(JAVA_COMP_OUT_DIR)/$$(basename $$(echo $$1 | cut -d: -f2)).jar executor/$$(basename $$(echo $$1 | cut -d: -f2)) $(TEMP_DIR) $(ANTLR_OUT_DIR); \
+  elif [[ "$1" =~ ^program-:(.+)$ ]]; then \
+    rm -rf $(JAVA_COMP_OUT_DIR)/$$(basename $$(echo $$1 | cut -d: -f2)).jar executor/$$(basename $$(echo $$1 | cut -d: -f2)) $(TEMP_DIR) $(ANTLR_OUT_DIR)/*.class; \
+  elif [[ "$1" =~ ^grammar:(.+)$ ]]; then \
+    rm -rf $(ANTLR_OUT_DIR)/$$(basename $$(echo $$1 | cut -d: -f2))*; \
+  else \
+    echo "Unknown clean option: $1"; \
+  fi
+endef
+
+# Clean specific program or option
+# Calls the process_clean_options function with the pattern as an argument
+clean:%:
+	$(call do_clean,$*)
+
+#useful for distinguishing initial make error messages and message generated by rules firing
+nothing:
+	@:
+
 
 #================================================================================
 # recipes
 
+
 # ANTLR a run of any of these will make all the files
-$(ANTLR_OUT_DIR)/%Lexer.java: $(ANTLR_IN_DIR)/%.g4
-	@echo "making grammar from:" $<
-	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
-
-$(ANTLR_OUT_DIR)/%Parser.java: $(ANTLR_IN_DIR)/%.g4
-	@echo "making grammar from:" $<
-	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
-
-$(ANTLR_OUT_DIR)/%BaseVisitor.java: $(ANTLR_IN_DIR)/%.g4
-	@echo "making grammar from:" $<
-	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
-
+$(ANTLR_OUT_DIR)/%Lexer.java \
+$(ANTLR_OUT_DIR)/%Parser.java \
+$(ANTLR_OUT_DIR)/%BaseVisitor.java \
 $(ANTLR_OUT_DIR)/%Visitor.java: $(ANTLR_IN_DIR)/%.g4
 	@echo "making grammar from:" $<
 	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
@@ -223,8 +261,11 @@ $(JAVA_COMP_OUT_DIR)/%.jar: $(JAVA_COMP_IN_PRIMARY_DIR)/%.java
 	@echo "Building $*..."
 	$(JAVA_COMP) -d $(JAVA_COMP_OUT_DIR) -sourcepath $(JAVA_COMP_IN_DL) $<
 	$(JAVA_ARCHIVE) cf $@ -C $(JVM_IN_DIR) $*.class
+
+executor/%: $(JAVA_COMP_OUT_DIR)/%.jar
 	@echo "Creating script for $*..."
-	echo "#!/usr/bin/env bash\n$(JAVA_INTERP) -cp $@ $*" > executor/$*.sh
-	chmod +x executor/$*.sh
+	echo "#!/usr/bin/env bash\n$(JAVA_INTERP) -cp $@ $*" > executor/$*
+	chmod +x executor/$*
+
 
 # LocalWords:  makefile
