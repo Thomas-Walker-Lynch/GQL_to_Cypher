@@ -119,9 +119,9 @@ all: setup $(PROGRAM_FPL)
 grammar: setup $(ANTLR_OUT_FPL)
 
 # specific programs or program versions:
-PrintRuleNameList: $(PrintRuleNameList)
-SyntaxTree_Test: $(ANTLR_OUT_SyntaxTree_Test_FPL) $(SyntaxTree_Test)
-SyntaxTree_20240412: $(ANTLR_OUT_SyntaxTree_20240412_FPL) $(SyntaxTree_20240412)
+PrintRuleNameList: $(PROGRAM_PrintRuleNameList)
+SyntaxTree_Test: $(ANTLR_OUT_SyntaxTree_Test_FPL) $(PROGRAM_SyntaxTree_Test)
+SyntaxTree_20240412: $(ANTLR_OUT_SyntaxTree_20240412_FPL) $(PROGRAM_SyntaxTree_20240412)
 
 # Specific grammar targets. Run them like this:
 # > make <grammar_name>
@@ -213,7 +213,7 @@ setup:
 # Accepts a list of files as an argument and deletes the files in the list
 # without complaining if a file is not found
 define clean_files
-  @echo "Cleaning files: $1";\
+  echo "Cleaning files: $1";\
   for file in $1; do \
     if [ -e "$$file" ]; then \
       echo rm -f "$$file"; \
@@ -311,16 +311,31 @@ $(ANTLR_OUT_DIR)/%Visitor.java: $(ANTLR_IN_DIR)/%.g4
 	@echo "making grammar from:" $<
 	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
 
-# Generic recipe for building .jar files and placing scripts in the executor directory
 $(JAVA_COMP_OUT_DIR)/%.jar: $(JAVA_COMP_IN_PRIMARY_DIR)/%.java
 	@echo "Building $*..."
 	$(JAVA_COMP) -d $(JAVA_COMP_OUT_DIR) -sourcepath $(JAVA_COMP_IN_DL) $<
 	$(JAVA_ARCHIVE) cf $@ -C $(JVM_IN_DIR) $*.class
+	@echo "Created $@"
 
+.PRECIOUS: $(JAVA_COMP_OUT_DIR)/%.jar
 executor/%: $(JAVA_COMP_OUT_DIR)/%.jar
 	@echo "Creating script for $*..."
-	echo "#!/usr/bin/env bash\n$(JAVA_INTERP) -cp $@ $*" > executor/$*
+	@echo "#!/usr/bin/env bash" > executor/$*
+	@echo "$(JAVA_INTERP) -cp $< $*" >> executor/$*
 	chmod +x executor/$*
+	@echo "Created script executor/$*"
+
+# # Generic recipe for building .jar files and placing scripts in the executor directory
+# $(JAVA_COMP_OUT_DIR)/%.jar: $(JAVA_COMP_IN_PRIMARY_DIR)/%.java
+# 	@echo "Building $*..."
+# 	$(JAVA_COMP) -d $(JAVA_COMP_OUT_DIR) -sourcepath $(JAVA_COMP_IN_DL) $<
+# 	$(JAVA_ARCHIVE) cf $@ -C $(JVM_IN_DIR) $*.class
+
+# executor/%: $(JAVA_COMP_OUT_DIR)/%.jar
+# 	@echo "Creating script for $*..."
+# 	@echo "#!/usr/bin/env bash" > executor/$*
+# 	@echo "$(JAVA_INTERP) -cp $< $*" >> executor/$*
+# 	chmod +x executor/$*
 
 
 # LocalWords:  makefile

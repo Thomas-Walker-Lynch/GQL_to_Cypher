@@ -2,5 +2,5 @@
 
 cd "$REPO_HOME"/developer || { echo "Failed to change directory to" "$REPO_HOME"/developer; exit 1; }
 
-/usr/bin/make -k $@
+/usr/bin/make --no-builtin-rules --keep-going $@
 
