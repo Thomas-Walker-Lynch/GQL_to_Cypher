@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-/var/user_data/Thomas-developer/GQL_to_Cypher/tool/jdk-22.0.1+8/bin/java -cp jvm/PrintRuleNameList.jar PrintRuleNameList $@

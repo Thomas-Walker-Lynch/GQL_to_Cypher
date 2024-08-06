@@ -191,21 +191,21 @@ setup:
 # 1. clean:temporary  - removes files from ./temporary
 # 2. General clean targets:
 #      clean:all  - removes all things make built, and thus can be replaced by running make again.
-#      clean:all-   (minus after the all)  same as clean:all except for the program files (and their .jar if any)
+#      clean:all-   (minus after the all)  same as clean:all except not the program files (and their .jar if any)
 #      clean:program -  all program files, i.e. ./exector/<program>   and ./jvm/<program.jar>  for all programs.
 #      clean:class - class files
 #      clean:grammar - all generated grammar files
      
 # 2. 
 #     clean:program:<name>
-#     similear to clean:program, but only for the named program
-
+#     similar to clean:program, but only for the named program
+#
 #     clean:program+:<name>
 #     bascially clean:all but only for the named program
-
+#
 #     clean:program-:<mame>
 #     baiscally clean:all- but only for the named program
-
+#
 # 3. clean:grammar:<name>
 #     siimilar to clean:grammar, but only for the named grammar	
 
@@ -239,60 +239,85 @@ define clean_directory
   fi
 endef
 
-# Function to handle individual cleaning
-# Accepts a single option and removes the appropriate files
-define do_clean
-  echo "Cleaning files for option: $1";\
-  if [ "$1" = "" ]; then \
-    echo "Usage: make clean:< all[-] | program[+/-][:<name>] | grammar[:<name>] | class | temp[orary] >"; \
-  elif [ "$1" = "temporary" -o "$1" = "temp" ]; then \
+define clean_command_parser_1
+  if [ "$(token)" = "temporary" ]; then \
     $(call clean_directory,$(TEMP_DIR)); \
-  elif [ "$1" = "all" ]; then \
+  elif [ "$(token)" = "temp" ]; then \
+    $(call clean_directory,$(TEMP_DIR)); \
+  elif [ "$(token)" = "all" ]; then \
     $(call clean_directory,$(TEMP_DIR)); \
     $(call clean_files,$(ANTLR_OUT_FPL)); \
     $(call clean_files,$(JAVA_COMP_OUT_FPL)); \
     $(call clean_files,$(PROGRAM_FPL)); \
-  elif [ "$1" = "all-" ]; then \
+  elif [ "$(token)" = "all-" ]; then \
     $(call clean_directory,$(TEMP_DIR)); \
     $(call clean_files,$(ANTLR_OUT_FPL)); \
     $(call clean_files,$(JAVA_COMP_OUT_PRIMARY_FPL)); \
-  elif [ "$1" = "program" ]; then \
+  elif [ "$(token)" = "program" ]; then \
     $(call clean_files,$(PROGRAM_FPL)); \
-  elif [ "$1" = "class" ]; then \
+  elif [ "$(token)" = "class" ]; then \
     $(call clean_files,$(JAVA_COMP_OUT_FPL)); \
-  elif [ "$1" = "grammar" ]; then \
+  elif [ "$(token)" = "grammar" ]; then \
     $(call clean_files,$(ANTLR_OUT_FPL)); \
-  elif [ "$1" = "program:"* ]; then \
-    program_name=$${1#program:}; \
-    $(call clean_files,$(JAVA_COMP_OUT_DIR)/$${program_name}.jar executor/$${program_name}); \
-  elif [ "$1" = "program+:"* ]; then \
-    program_name=$${1#program+:}; \
-    $(call clean_files,$(JAVA_COMP_OUT_DIR)/$${program_name}.jar executor/$${program_name}); \
-    $(call clean_directory,$(TEMP_DIR)); \
-    $(call clean_files,$(ANTLR_OUT_FPL)); \
-  elif [ "$1" = "program-:"* ]; then \
-    program_name=$${1#program-:}; \
-    $(call clean_files,$(JAVA_COMP_OUT_DIR)/$${program_name}.jar executor/$${program_name}); \
-    $(call clean_directory,$(TEMP_DIR)); \
-    $(call clean_files,$(JAVA_COMP_OUT_PRIMARY_FPL)); \
-  elif [ "$1" = "grammar:"* ]; then \
-    grammar_name=$${1#grammar:}; \
-    $(call clean_files,$(ANTLR_OUT_DIR)/$${grammar_name}*); \
   else \
-    echo "Unknown clean option: $1"; \
+    echo "Unknown clean option: $(token)"; \
   fi
 endef
+
+define clean_command_parser_2
+  if [ "$(token)" = "program" ]; then \
+    $(call clean_files,$(JAVA_COMP_OUT_DIR)/$(arg).jar executor/$(arg)); \
+  elif [ "$(token)" = "program+" ]; then \
+    $(call clean_files,$(JAVA_COMP_OUT_DIR)/$(arg).jar executor/$(arg)); \
+    $(call clean_directory,$(TEMP_DIR)); \
+    $(call clean_files,$(ANTLR_OUT_FPL)); \
+  elif [ "$(token)" = "program-" ]; then \
+    $(call clean_files,$(JAVA_COMP_OUT_DIR)/$(arg).jar executor/$(arg)); \
+    $(call clean_directory,$(TEMP_DIR)); \
+    $(call clean_files,$(JAVA_COMP_OUT_PRIMARY_FPL)); \
+  elif [ "$(token)" = "grammar" ]; then \
+    $(call clean_files,$(ANTLR_OUT_DIR)/$(arg)*); \
+  else \
+    echo "Unknown clean option: $(token)"; \
+  fi
+endef
+
+define clean_command_parser
+  $(eval token_list := $1)
+  $(eval token_count := $(words $(token_list)))
+  $(eval token := $(firstword $(token_list)))
+  $(eval arg := $(word 2, $(token_list)))
+  if [ "$(token_count)" -eq 0 ]; then \
+    echo "Usage: make clean:< all[-] | program[+/-] <name> | grammar <name> | class | temp[orary] >"; \
+  elif [ "$(token_count)" -eq 1 ]; then \
+    $(call clean_command_parser_1); \
+  elif [ "$(token_count)" -eq 2 ]; then \
+    $(call clean_command_parser_2); \
+  else \
+    echo "Invalid number of tokens: $(token_count)"; \
+  fi
+endef
+
+# Clean specific program or option
+# Calls the clean_command_parser function with the pattern as an argument
+.PHONY: clean\:%
+clean\:%:
+	$(eval token_list := $(subst :, ,$*))
+	@$(call clean_command_parser,$(token_list))
+
+
+# Clean specific program or option
+# Calls the clean_command_parser function with the pattern as an argument
+.PHONY: clean\:%
+clean\:%:
+	@$(call clean_command_parser,$(subst :, ,$*))
 
 # Default clean target
 .PHONY: clean
 clean:
 	@echo "Usage: make clean:< all[-] | program[+/-][:<name>] | grammar[:<name>] | class | temp[orary] >"
 
-# Clean specific program or option
-# Calls the do_clean function with the pattern as an argument
-.PHONY: clean\:%
-clean\:%:
-	@$(call do_clean,$*)
+
 
 #useful for distinguishing initial make error messages and message generated by rules firing
 nothing:
