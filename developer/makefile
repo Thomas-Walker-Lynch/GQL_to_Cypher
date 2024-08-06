@@ -321,7 +321,7 @@ $(JAVA_COMP_OUT_DIR)/%.jar: $(JAVA_COMP_IN_PRIMARY_DIR)/%.java
 executor/%: $(JAVA_COMP_OUT_DIR)/%.jar
 	@echo "Creating script for $*..."
 	@echo "#!/usr/bin/env bash" > executor/$*
-	@echo "$(JAVA_INTERP) -cp $< $*" >> executor/$*
+	@echo "$(JAVA_INTERP) -cp $< $*" \$$\@ >> executor/$*
 	chmod +x executor/$*
 	@echo "Created script executor/$*"
 
