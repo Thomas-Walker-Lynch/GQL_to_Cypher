@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+source /path/to/env.sh
+
+if [ -z "$1" ]; then
+  echo "Error: File list name is not provided."
+  exit 1
+fi
+
+file_list=$(eval echo \$$1)
+
+if [ -z "$file_list" ]; then
+  echo "Error: File list $1 is empty or not set."
+  exit 1
+fi
+
+echo "Cleaning files: $file_list"
+for file in $file_list; do
+  if [ -e "$file" ]; then
+    echo rm -f "$file"
+    rm -f "$file"
+  fi
+done

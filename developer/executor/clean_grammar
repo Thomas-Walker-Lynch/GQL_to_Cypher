@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# Check if required variables are set
+if [ -z "$ANTLR_GRAMMAR_LIST" ] || [ -z "$ANTLR_OUT_DIR" ]; then
+  echo "Error: Required environment variables ANTLR_GRAMMAR_LIST or ANTLR_OUT_DIR are not set."
+  exit 1
+fi
+
+# Function to delete a specific grammar
+delete_grammar() {
+  local grammar=$1
+  if [ -z "$grammar" ]; then
+    echo "Error: Grammar name is empty"
+  elif echo "$ANTLR_GRAMMAR_LIST" | grep -qw "$grammar"; then
+    rm -f "$ANTLR_OUT_DIR/$grammar"*
+    echo "Deleted files starting with $grammar in $ANTLR_OUT_DIR"
+  else
+    echo "Invalid grammar name: $grammar"
+  fi
+}
+
+# If no argument is given, delete all grammars
+if [ -z "$1" ]; then
+  for grammar in $ANTLR_GRAMMAR_LIST; do
+    delete_grammar "$grammar"
+  done
+else
+  delete_grammar "$1"
+fi

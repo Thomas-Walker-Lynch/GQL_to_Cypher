@@ -15,4 +15,6 @@ fi
 PATH="$REPO_HOME/executor:$PATH"
 PROJECT="$PROJECT"_PM
 
+alias ls="ls -a"
+
 echo "${BASH_SOURCE[0]}" "complete"

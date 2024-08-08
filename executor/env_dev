@@ -12,13 +12,12 @@ if [ -z "$REPO_HOME" ]; then
   source "${script_path}/env_base"
 fi
 
-export ANTLR_JAR="$REPO_HOME/tool/executor/antlr-4.11.1-complete.jar"
 export JAVA_HOME="$REPO_HOME/tool/jdk-22.0.1+8"
-export CLASSPATH="$ANTLR_JAR"
+export ANTLR_JAR="$REPO_HOME/tool/executor/antlr-4.11.1-complete.jar"
+export DEVELOPER_HOME="$REPO_HOME/developer"
 
-export PATH="$REPO_HOME"/developer/executor:"$REPO_HOME"/tool/executor:"$JAVA_HOME"/bin:"$PATH"
-
-alias ls="ls -a"
-cd "$REPO_HOME/developer"
+export PATH="$DEVELOPER_HOME"/executor:"$REPO_HOME"/tool/executor:"$JAVA_HOME"/bin:"$PATH"
+cd "$DEVELOPER_HOME"
+source "$DEVELOPER_HOME"/executor/env_build
 
 echo "${BASH_SOURCE[0]}" "complete"

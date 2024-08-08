@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+
+# Ensure the script is sourced
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  echo "This script must be sourced, not executed. Exiting."
+  return 1
+fi
+
+
+# Note these suffixes:
+# _FL  = File List
+# _FPL = File Path List 
+# _DL  = Directory List
+
+# _PRIMARY = stuff not built
+# _IN  things input to some program
+# _OUT things output by some program
+
+#--------------------------------------------------------------------------------
+# tools
+#
+#  set by project manager: JAVA_HOME, ANTLR_JAR, DEVELOPER_HOME
+#
+export JAVA_COMP="${JAVA_HOME}/bin/javac"
+export JAVA_INTERP="${JAVA_HOME}/bin/java"
+export JAVA_ARCHIVE="${JAVA_HOME}/bin/jar"
+export CLASSPATH="$ANTLR_JAR"
+
+#--------------------------------------------------------------------------------
+# to be built
+#
+export PROGRAM_PrintRuleNameList="executor/PrintRuleNameList"
+export PROGRAM_SyntaxTree_Test="executor/SyntaxTree_Test"
+export PROGRAM_SyntaxTree_20240412="executor/SyntaxTree_20240412"
+
+# an all programs list
+export PROGRAM_FPL="${PROGRAM_PrintRuleNameList} ${PROGRAM_SyntaxTree_Test} ${PROGRAM_SyntaxTree_20240412}"
+
+#--------------------------------------------------------------------------------
+# misc
+#
+export TEMP_DIR="$DEVELOPER_HOME"/temporary
+
+#--------------------------------------------------------------------------------
+# ANTLR environment
+#
+
+# ANTLR directories
+export ANTLR_PRIMARY_DIR="ANTLR"
+export ANTLR_IN_DIR="${ANTLR_PRIMARY_DIR}"
+export ANTLR_OUT_DIR="javac/ANTLR"
+export ANTLR_OUT_DIR_PARENT="javac"
+
+# ANTLR input files
+ANTLR_IN_FPL=$(ls ${ANTLR_IN_DIR}/*.g4 2>/dev/null)
+export ANTLR_GRAMMAR_LIST=$(basename -s .g4 ${ANTLR_IN_FPL})
+if [ -z "${ANTLR_IN_FPL}" ]; then
+  echo "No ANTLR input grammar files found"
+fi
+
+# ANTLR will produce these output files.
+#
+# This function accepts a grammar name, or a grammar name with an extension; 
+# and sets a variable of the form ANTLR_OUT_<grammar>_FPL to a list of
+# files that ANTLR would produce for <grammar>.
+set_ANTLR_out_fpl_var() {
+  local grammar=$1
+  export ANTLR_OUT_${grammar}_FPL="${ANTLR_OUT_DIR}/${grammar}Lexer.java ${ANTLR_OUT_DIR}/${grammar}Parser.java ${ANTLR_OUT_DIR}/${grammar}BaseVisitor.java ${ANTLR_OUT_DIR}/${grammar}Visitor.java"
+}
+
+# Generate ANTLR_OUT_<grammar>_FPL for each grammar
+for grammar in ${ANTLR_GRAMMAR_LIST}; do
+  set_ANTLR_out_fpl_var ${grammar}
+done
+
+# Combine all individual file lists into ANTLR_OUT_FPL
+ANTLR_OUT_FPL=""
+for grammar in ${ANTLR_GRAMMAR_LIST}; do
+  ANTLR_OUT_FPL="${ANTLR_OUT_FPL} $(eval echo \$ANTLR_OUT_${grammar}_FPL)"
+done
+export ANTLR_OUT_FPL
+
+#--------------------------------------------------------------------------------
+# Java environment
+#
+
+# JAVA directories
+export JAVA_COMP_IN_PRIMARY_DIR="javac"
+export JAVA_COMP_IN_ANTLR_DIR="${ANTLR_OUT_DIR}"
+export JAVA_COMP_IN_DL="${JAVA_COMP_IN_PRIMARY_DIR}:${JAVA_COMP_IN_ANTLR_DIR}"
+export JAVA_COMP_OUT_DIR="jvm"
+
+# JAVA input files
+JAVA_COMP_IN_PRIMARY_FPL=$(ls ${JAVA_COMP_IN_PRIMARY_DIR}/*.java 2>/dev/null)
+JAVA_COMP_IN_ANTLR_FPL=${ANTLR_OUT_FPL}
+export JAVA_COMP_IN_FPL="${JAVA_COMP_IN_PRIMARY_FPL} ${JAVA_COMP_IN_ANTLR_FPL}"
+
+# JAVA will produce these output files
+JAVA_COMP_OUT_PRIMARY_FPL=$(echo ${JAVA_COMP_IN_PRIMARY_FPL} | sed "s|${JAVA_COMP_IN_PRIMARY_DIR}/|${JAVA_COMP_OUT_DIR}/|g" | sed "s|.java|.class|g")
+JAVA_COMP_OUT_ANTLR_FPL=$(echo ${JAVA_COMP_IN_ANTLR_FPL} | sed "s|${JAVA_COMP_IN_ANTLR_DIR}/|${JAVA_COMP_OUT_DIR}/|g" | sed "s|.java|.class|g")
+export JAVA_COMP_OUT_FPL="${JAVA_COMP_OUT_PRIMARY_FPL} ${JAVA_COMP_OUT_ANTLR_FPL}"
+
+#--------------------------------------------------------------------------------
+# JVM environment
+#
+export JVM_IN_DIR="${JAVA_COMP_OUT_DIR}"
+export CLASSPATH="${CLASSPATH}:${JVM_IN_DIR}"
+

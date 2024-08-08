@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+# Clean targets:
+#
+# 1. > clean temp[orary] - removes files from ./temporary except for .githolder
+#
+# 2. General clean targets:
+#
+#    > clean all # removes all things make built, and thus can be replaced by running make again.
+#    > clean all- # same as clean:all except not the program files (and their .jar if any)
+#    > clean program # remove all built ./executor/<program> and ./jvm/<program.jar> files
+#    > clean class # removes the class files
+#    > clean grammar # removes the generated java grammar files
+#
+# 3. Specific clean targets:
+#
+#    > clean program <program_name> # similar to clean:program, but only for the named program
+#    - clean all  <program_name> # basically clean:all but only for the named program
+#    - clean all- <program_name> # basically clean:all- but only for the named program
+#    - clean grammar <grammar_name> - similar to clean:grammar, but only for the named grammar
+
+# Function to display usage message
+display_usage() {
+  echo "Usage: clean <all[-] [<program>] | program <name> | grammar <name> | class | temp[orary]>"
+}
+
+# Command parser
+clean_command_parser() {
+  local token_list=($1)
+  local token_count=${#token_list[@]}
+  local command=${token_list[0]}
+  local arg=${token_list[1]}
+
+  if [ "$token_count" -eq 0 ]; then
+    display_usage
+  elif [ "$token_count" -eq 1 ]; then
+    case "$command" in
+      "temporary" | "temp")
+        clean_directory "$TEMP_DIR"
+        ;;
+      "all")
+        clean_directory "$TEMP_DIR"
+        clean_grammar
+        clean_files "JAVA_COMP_OUT_FPL"
+        clean_files "PROGRAM_FPL"
+        ;;
+      "all-")
+        clean_directory "$TEMP_DIR"
+        clean_grammar
+        clean_files "JAVA_COMP_OUT_PRIMARY_FPL"
+        ;;
+      "program")
+        clean_files "PROGRAM_FPL"
+        ;;
+      "class")
+        clean_files "JAVA_COMP_OUT_FPL"
+        ;;
+      "grammar")
+        clean_grammar
+        ;;
+      *)
+        echo "Unknown clean option: $command"
+        ;;
+    esac
+  elif [ "$token_count" -eq 2 ]; then
+    case "$command" in
+      "program")
+        clean_files "$JAVA_COMP_OUT_DIR/$arg.jar executor/$arg"
+        ;;
+      "all")
+        clean_files "$JAVA_COMP_OUT_DIR/$arg.jar executor/$arg"
+        clean_directory "$TEMP_DIR"
+        clean_grammar "$arg"
+        ;;
+      "all-")
+        clean_files "$JAVA_COMP_OUT_DIR/$arg.class $JAVA_COMP_OUT_DIR/$arg.BaseVisitor.class $JAVA_COMP_OUT_DIR/$arg.Visitor.class $JAVA_COMP_OUT_DIR/$arg.Parser.class $JAVA_COMP_OUT_DIR/$arg.Lexer.class"
+        clean_directory "$TEMP_DIR"
+        ;;
+      "grammar")
+        clean_grammar "$arg"
+        ;;
+      *)
+        echo "Unknown clean command: $command"
+        ;;
+    esac
+  else
+    echo "Clean commands are at most two tokens, but we found: $token_count"
+  fi
+}
+
+# Main script logic
+if [ $# -eq 0 ]; then
+  display_usage
+else
+  clean_command_parser "$*"
+fi
