@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#!/usr/bin/env bash
 
 # Clean targets:
 #
@@ -7,26 +8,24 @@
 # 2. General clean targets:
 #
 #    > clean all # removes all things make built, and thus can be replaced by running make again.
-#    > clean all- # same as clean:all except not the program files (and their .jar if any)
-#    > clean program # remove all built ./executor/<program> and ./jvm/<program.jar> files
+#    > clean program # removes all built executor scripts and corresponding jar files
 #    > clean class # removes the class files
 #    > clean grammar # removes the generated java grammar files
 #
 # 3. Specific clean targets:
 #
-#    > clean program <program_name> # similar to clean:program, but only for the named program
-#    - clean all  <program_name> # basically clean:all but only for the named program
-#    - clean all- <program_name> # basically clean:all- but only for the named program
-#    - clean grammar <grammar_name> - similar to clean:grammar, but only for the named grammar
+#    > clean all <program_name> # cleans all files built while building the program
+#    > clean program <program_name> # removes the script and jar file for the given program
+#    > clean grammar <grammar_name> - similar to clean:grammar, but only for the named grammar
 
 # Function to display usage message
 display_usage() {
-  echo "Usage: clean <all[-] [<program>] | program <name> | grammar <name> | class | temp[orary]>"
+  echo "Usage: clean <all [<program_name>] | program [<program_name>] | grammar [<name>] | class | temp[orary]>"
 }
 
 # Command parser
 clean_command_parser() {
-  local token_list=($1)
+  local token_list=($@)
   local token_count=${#token_list[@]}
   local command=${token_list[0]}
   local arg=${token_list[1]}
@@ -41,19 +40,16 @@ clean_command_parser() {
       "all")
         clean_directory "$TEMP_DIR"
         clean_grammar
-        clean_files "JAVA_COMP_OUT_FPL"
-        clean_files "PROGRAM_FPL"
-        ;;
-      "all-")
-        clean_directory "$TEMP_DIR"
-        clean_grammar
-        clean_files "JAVA_COMP_OUT_PRIMARY_FPL"
+        clean_file_list "JAVA_COMP_OUT_FPL"
+        clean_file_list "JAR_OUT_FPL"
+        clean_file_list "PROGRAM_FPL"
         ;;
       "program")
-        clean_files "PROGRAM_FPL"
+        clean_file_list "JAR_OUT_FPL"
+        clean_file_list "PROGRAM_FPL"
         ;;
       "class")
-        clean_files "JAVA_COMP_OUT_FPL"
+        clean_file_list "JAVA_COMP_OUT_FPL"
         ;;
       "grammar")
         clean_grammar
@@ -64,17 +60,27 @@ clean_command_parser() {
     esac
   elif [ "$token_count" -eq 2 ]; then
     case "$command" in
-      "program")
-        clean_files "$JAVA_COMP_OUT_DIR/$arg.jar executor/$arg"
-        ;;
       "all")
-        clean_files "$JAVA_COMP_OUT_DIR/$arg.jar executor/$arg"
-        clean_directory "$TEMP_DIR"
-        clean_grammar "$arg"
+        clean_file_list "executor/$arg $JAVA_COMP_OUT_DIR/$arg.jar $JAVA_COMP_OUT_DIR/$arg.class"
+        # program specific cleaning
+        case "$arg" in
+          "SyntaxTree_Test")
+            clean_grammar "GQL_Test"
+            ;;
+          "SyntaxTree_20240412")
+            clean_grammar "GQL_20240412"
+            ;;
+          "PrintRuleNameList")
+            : 
+            ;;
+          *)
+            echo "Unknown program: $arg"
+            ;;
+        esac
         ;;
-      "all-")
-        clean_files "$JAVA_COMP_OUT_DIR/$arg.class $JAVA_COMP_OUT_DIR/$arg.BaseVisitor.class $JAVA_COMP_OUT_DIR/$arg.Visitor.class $JAVA_COMP_OUT_DIR/$arg.Parser.class $JAVA_COMP_OUT_DIR/$arg.Lexer.class"
-        clean_directory "$TEMP_DIR"
+      "program")
+        clean_file_list "executor/$arg"
+        clean_file_list "$JAVA_COMP_OUT_DIR/$arg.jar"
         ;;
       "grammar")
         clean_grammar "$arg"
@@ -88,9 +94,4 @@ clean_command_parser() {
   fi
 }
 
-# Main script logic
-if [ $# -eq 0 ]; then
-  display_usage
-else
-  clean_command_parser "$*"
-fi
+clean_command_parser $@

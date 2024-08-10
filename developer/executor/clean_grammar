@@ -9,6 +9,7 @@ fi
 # Function to delete a specific grammar
 delete_grammar() {
   local grammar=$1
+  echo "Attempting to delete grammar: $grammar"
   if [ -z "$grammar" ]; then
     echo "Error: Grammar name is empty"
   elif echo "$ANTLR_GRAMMAR_LIST" | grep -qw "$grammar"; then
@@ -21,9 +22,11 @@ delete_grammar() {
 
 # If no argument is given, delete all grammars
 if [ -z "$1" ]; then
+  echo "No argument provided, deleting all grammars"
   for grammar in $ANTLR_GRAMMAR_LIST; do
     delete_grammar "$grammar"
   done
 else
+  echo "Argument provided: $1"
   delete_grammar "$1"
 fi

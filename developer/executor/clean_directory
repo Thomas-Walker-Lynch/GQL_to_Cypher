@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-source /path/to/env.sh
 
 if [ -z "$1" ]; then
   echo "Error: Directory argument is empty"

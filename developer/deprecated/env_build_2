@@ -6,6 +6,7 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   return 1
 fi
 
+
 # Note these suffixes:
 # _FL  = File List
 # _FPL = File Path List 
@@ -63,7 +64,7 @@ export TEMP_DIR="$DEVELOPER_HOME"/temporary
 # ANTLR files
 #
 
-export ANTLR_IN_FPL=$(ls ${ANTLR_IN_PRIMARY_DIR}/*.g4 2>/dev/null | tr '\n' ' ')
+export ANTLR_IN_FPL=$(ls ${ANTLR_IN_PRIMARY_DIR}/*.g4 2>/dev/null)
 export ANTLR_GRAMMAR_LIST=$(basename -s .g4 ${ANTLR_IN_FPL})
 if [ -z "${ANTLR_IN_FPL}" ]; then
   echo "No ANTLR input grammar files found"
@@ -94,7 +95,7 @@ export ANTLR_OUT_FPL
 #
 
 # JAVA input files
-export JAVA_COMP_IN_PRIMARY_FPL=$(ls ${JAVA_COMP_IN_PRIMARY_DIR}/*.java 2>/dev/null | tr '\n' ' ')
+export JAVA_COMP_IN_PRIMARY_FPL=$(ls ${JAVA_COMP_IN_PRIMARY_DIR}/*.java 2>/dev/null)
 export JAVA_COMP_IN_ANTLR_FPL=${ANTLR_OUT_FPL}
 export JAVA_COMP_IN_FPL="${JAVA_COMP_IN_PRIMARY_FPL} ${JAVA_COMP_IN_ANTLR_FPL}"
 
@@ -102,6 +103,7 @@ export JAVA_COMP_IN_FPL="${JAVA_COMP_IN_PRIMARY_FPL} ${JAVA_COMP_IN_ANTLR_FPL}"
 export JAVA_COMP_OUT_PRIMARY_FPL=$(echo ${JAVA_COMP_IN_PRIMARY_FPL} | sed "s|${JAVA_COMP_IN_PRIMARY_DIR}/|${JAVA_COMP_OUT_DIR}/|g" | sed "s|.java|.class|g")
 export JAVA_COMP_OUT_ANTLR_FPL=$(echo ${JAVA_COMP_IN_ANTLR_FPL} | sed "s|${JAVA_COMP_IN_ANTLR_DIR}/|${JAVA_COMP_OUT_DIR}/|g" | sed "s|.java|.class|g")
 export JAVA_COMP_OUT_FPL="${JAVA_COMP_OUT_PRIMARY_FPL} ${JAVA_COMP_OUT_ANTLR_FPL}"
+
 #--------------------------------------------------------------------------------
 # JAR files
 #
