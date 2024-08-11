@@ -22,14 +22,18 @@ public class PrintRuleNameList {
     Set<String> ruleNames = new HashSet<>();
 
     try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+      StringBuilder content = new StringBuilder();
       String line;
-      Pattern rulePattern = Pattern.compile("^([a-zA-Z_][a-zA-Z0-9_]*)\\s*:");
-
       while ((line = br.readLine()) != null) {
-        Matcher matcher = rulePattern.matcher(line);
-        if (matcher.find()) {
-          ruleNames.add(matcher.group(1));
-        }
+        content.append(line).append("\n");
+      }
+
+      // Updated pattern to handle multi-line rules
+      Pattern rulePattern = Pattern.compile("(?m)^\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*:");
+
+      Matcher matcher = rulePattern.matcher(content.toString());
+      while (matcher.find()) {
+        ruleNames.add(matcher.group(1));
       }
 
       System.out.println("Extracted Rules:");

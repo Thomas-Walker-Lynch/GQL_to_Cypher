@@ -48,11 +48,12 @@ export CLASSPATH="$ANTLR_JAR"
 # to be built
 #
 export PROGRAM_PrintRuleNameList="executor/PrintRuleNameList"
-export PROGRAM_SyntaxTree_Test="executor/SyntaxTree_Test"
+export PROGRAM_SyntaxTree_Arithmetic="executor/SyntaxTree_Arithmetic"
+export PROGRAM_Test__SyntaxTree_Arithmetic="executor/Test__SyntaxTree_Arithmetic"
 export PROGRAM_SyntaxTree_20240412="executor/SyntaxTree_20240412"
 
 # an all programs list
-export PROGRAM_FPL="${PROGRAM_PrintRuleNameList} ${PROGRAM_SyntaxTree_Test} ${PROGRAM_SyntaxTree_20240412}"
+export PROGRAM_FPL="${PROGRAM_PrintRuleNameList} ${PROGRAM_SyntaxTree_Arithmetic} ${PROGRAM_SyntaxTree_20240412} ${PROGRAM_Test__SyntaxTree_Arithmetic}"
 
 #--------------------------------------------------------------------------------
 # misc

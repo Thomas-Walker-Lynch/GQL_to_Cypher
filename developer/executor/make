@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 cd "$DEVELOPER_HOME" || { echo "Failed to change directory to" "$DEVELOPER_HOME"; exit 1; }
-
+source executor/env_build
 /usr/bin/make --no-builtin-rules --keep-going $@
 

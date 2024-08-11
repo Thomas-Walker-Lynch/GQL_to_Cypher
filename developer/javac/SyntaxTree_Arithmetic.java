@@ -5,15 +5,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.lang.reflect.Method;
 
-public class SyntaxTree_20240412 {
+public class SyntaxTree_Arithmetic {
 
   // Versioned Lexer and Parser
-  static final Class<?> GQL_Lexer = GQL_20240412Lexer.class;
-  static final Class<?> GQL_Parser = GQL_20240412Parser.class;
+  static final Class<?> GQL_Lexer = ArithmeticLexer.class;
+  static final Class<?> GQL_Parser = ArithmeticParser.class;
 
   public static void main(String[] args) throws IOException {
     if (args.length != 1) {
-      System.err.println("Usage: java SyntaxTree20240412 <input-file>");
+      System.err.println("Usage: java SyntaxTree <input-file>");
       System.exit(1);
     }
 
