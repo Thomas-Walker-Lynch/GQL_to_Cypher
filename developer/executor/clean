@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#!/usr/bin/env bash
 
 # Clean targets:
 #
@@ -21,6 +20,35 @@
 # Function to display usage message
 display_usage() {
   echo "Usage: clean <all [<program_name>] | program [<program_name>] | grammar [<name>] | class | temp[orary]>"
+}
+
+# Function to clean a directory
+clean_directory() {
+  local dir="$1"
+  find "$dir" -type f ! -name '.githolder' -exec rm -f {} +
+}
+
+# Function to check if a program is in PROGRAM_FPL
+is_program_in_fpl() {
+  local program="$1"
+  for prog in $PROGRAM_FPL; do
+    if [[ "$prog" == *"$program"* ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Function to delete a program
+delete_program() {
+  local program="$1"
+  if is_program_in_fpl "$program"; then
+    echo "Deleting program files for '$program'"
+    rm -f "executor/$program" "$JAVA_COMP_OUT_DIR/$program.jar" "$JAVA_COMP_OUT_DIR/$program.class"
+  else
+    echo "Error: Program '$program' is not recognized or is not listed in PROGRAM_FPL."
+    return 1
+  fi
 }
 
 # Command parser
@@ -61,8 +89,9 @@ clean_command_parser() {
   elif [ "$token_count" -eq 2 ]; then
     case "$command" in
       "all")
-        clean_file_list "executor/$arg $JAVA_COMP_OUT_DIR/$arg.jar $JAVA_COMP_OUT_DIR/$arg.class"
-        # program specific cleaning
+        # Program name is $arg.
+        delete_program "$arg"
+        # Custom cleaning for each program.
         case "$arg" in
           "SyntaxTree_Test")
             clean_grammar "GQL_Test"
@@ -79,10 +108,11 @@ clean_command_parser() {
         esac
         ;;
       "program")
-        clean_file_list "executor/$arg"
-        clean_file_list "$JAVA_COMP_OUT_DIR/$arg.jar"
+        # Program name is $arg.
+        delete_program "$arg"
         ;;
       "grammar")
+        # Grammar name is $arg.
         clean_grammar "$arg"
         ;;
       *)
@@ -94,4 +124,5 @@ clean_command_parser() {
   fi
 }
 
+source env_build
 clean_command_parser $@

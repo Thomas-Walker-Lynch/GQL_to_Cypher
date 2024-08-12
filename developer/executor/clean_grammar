@@ -9,7 +9,7 @@ fi
 # Function to delete a specific grammar
 delete_grammar() {
   local grammar=$1
-  echo "Attempting to delete grammar: $grammar"
+  # echo "Attempting to delete grammar: $grammar"
   if [ -z "$grammar" ]; then
     echo "Error: Grammar name is empty"
   elif echo "$ANTLR_GRAMMAR_LIST" | grep -qw "$grammar"; then

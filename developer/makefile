@@ -74,7 +74,7 @@ nothing:
 $(ANTLR_OUT_DIR)/%Lexer.java \
 $(ANTLR_OUT_DIR)/%Parser.java \
 $(ANTLR_OUT_DIR)/%BaseVisitor.java \
-$(ANTLR_OUT_DIR)/%Visitor.java: $(ANTLR_IN_PRIMARY_DIR)/%.g4
+$(ANTLR_OUT_DIR)/%Visitor.java: $(ANTLR_IN_PRIMARY_FPL)
 	@echo "making grammar from:" $<
 	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
 

@@ -1,21 +1,54 @@
 #!/usr/bin/env bash
 
 if [ -z "$1" ]; then
-  echo "Error: File list name is not provided."
+  exit 0
+fi
+
+# Determine the directory where the script is located
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Use `env -i` to clear the environment and then source `env_build` from the script's directory
+env -i bash -c "
+
+source '${script_dir}/env_build'
+
+var_name='$1'
+#echo 'var_name is: ' \$var_name
+if [ -z \"\$var_name\" ]; then
+  echo 'USAGE: clean_file_list <env_variable_name>'
   exit 1
 fi
 
-file_list=$(eval echo \$$1)
-
-if [ -z "$file_list" ]; then
-  echo "Error: File list $1 is empty or not set."
+# Check if the variable is defined in the current environment
+if [ -z \"\$(eval echo \\$\$var_name)\" ]; then
+  echo 'Error: Environment variable \"\$var_name\" is not defined in env_build.'
   exit 1
 fi
 
-echo "Cleaning files: $file_list"
-for file in $file_list; do
-  if [ -e "$file" ]; then
-    echo rm -f "$file"
-    rm -f "$file"
+# Check if the variable name contains 'PRIMARY' (case insensitive)
+if [[ \"\$var_name\" =~ [Pp][Rr][Ii][Mm][Aa][Rr][Yy] ]]; then
+  echo 'Error: Environment variable \"\$var_name\" contains \"PRIMARY\" so listed files were not deleted.'
+  exit 1
+fi
+
+# Check if the variable name ends with '_FPL'
+if [[ ! \"\$var_name\" =~ _FPL$ ]]; then
+  echo 'Error: Environment variable \"\$var_name\" must end with \"_FPL\".'
+  exit 1
+fi
+
+# Get the file list from the environment variable
+file_list=\$(eval echo \\$\$var_name)
+echo \$var_name \"=\" \$file_list
+
+if [ -z \"\$file_list\" ]; then
+  exit 0
+fi
+
+for file in \$file_list; do
+  if [ -e \"\$file\" ]; then
+    echo rm -f \"\$file\"
+    rm -f \"\$file\"
   fi
 done
+" "$1"

@@ -64,9 +64,9 @@ export TEMP_DIR="$DEVELOPER_HOME"/temporary
 # ANTLR files
 #
 
-export ANTLR_IN_FPL=$(ls ${ANTLR_IN_PRIMARY_DIR}/*.g4 2>/dev/null | tr '\n' ' ')
-export ANTLR_GRAMMAR_LIST=$(basename -s .g4 ${ANTLR_IN_FPL})
-if [ -z "${ANTLR_IN_FPL}" ]; then
+export ANTLR_IN_PRIMARY_FPL=$(ls ${ANTLR_IN_PRIMARY_DIR}/*.g4 2>/dev/null | tr '\n' ' ')
+export ANTLR_GRAMMAR_LIST=$(basename -s .g4 ${ANTLR_IN_PRIMARY_FPL})
+if [ -z "${ANTLR_IN_PRIMARY_FPL}" ]; then
   echo "No ANTLR input grammar files found"
 fi
 
