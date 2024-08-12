@@ -4,14 +4,14 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Test__SyntaxTree_Arithmetic {
+public class Arithmetic_Echo__Test {
 
   public static boolean PrintVisitor_0() {
     // Simple smoke test
     try {
       String input = "3 + 5";
       String expectedOutput = "(3 + 5)";
-      String actualOutput = runSyntaxTree(input);
+      String actualOutput = runSyntax(input);
       return expectedOutput.equals(actualOutput);
     } catch (Exception e) {
       return false;
@@ -23,7 +23,7 @@ public class Test__SyntaxTree_Arithmetic {
     try {
       String input = "2 * 3";
       String expectedOutput = "(2 * 3)";
-      String actualOutput = runSyntaxTree(input);
+      String actualOutput = runSyntax(input);
       return expectedOutput.equals(actualOutput);
     } catch (Exception e) {
       return false;
@@ -35,7 +35,7 @@ public class Test__SyntaxTree_Arithmetic {
     try {
       String input = "2 * (3 + 4)";
       String expectedOutput = "(2 * (3 + 4))";
-      String actualOutput = runSyntaxTree(input);
+      String actualOutput = runSyntax(input);
       return expectedOutput.equals(actualOutput);
     } catch (Exception e) {
       return false;
@@ -47,7 +47,7 @@ public class Test__SyntaxTree_Arithmetic {
     try {
       String input = "10 / 2";
       String expectedOutput = "(10 / 2)";
-      String actualOutput = runSyntaxTree(input);
+      String actualOutput = runSyntax(input);
       return expectedOutput.equals(actualOutput);
     } catch (Exception e) {
       return false;
@@ -59,7 +59,7 @@ public class Test__SyntaxTree_Arithmetic {
     try {
       String input = "3 + 5 * (10 - 4)";
       String expectedOutput = "(3 + (5 * (10 - 4)))";
-      String actualOutput = runSyntaxTree(input);
+      String actualOutput = runSyntax(input);
       // Uncomment the print statement for debugging
       // System.out.println("PrintVisitor_4 - Expected: " + expectedOutput + ", Actual: " + actualOutput);
       return expectedOutput.equals(actualOutput);
@@ -68,16 +68,14 @@ public class Test__SyntaxTree_Arithmetic {
     }
   }
 
-
-
-  private static String runSyntaxTree(String input) throws Exception {
+  private static String runSyntax(String input) throws Exception {
     Lexer lexer = new ArithmeticLexer(CharStreams.fromString(input));
     CommonTokenStream tokens = new CommonTokenStream(lexer);
-    Parser parser = new ArithmeticParser(tokens);
+    ArithmeticParser parser = new ArithmeticParser(tokens);
     Method startRule = parser.getClass().getMethod("program");
     ParseTree tree = (ParseTree) startRule.invoke(parser);
 
-    PrintVisitor visitor = new PrintVisitor(parser.getRuleNames());
+    Arithmetic_Echo_PrintVisitor visitor = new Arithmetic_Echo_PrintVisitor(parser.getRuleNames());
     return visitor.visit(tree);
   }
 

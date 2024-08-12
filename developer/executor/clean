@@ -7,7 +7,7 @@
 # 2. General clean targets:
 #
 #    > clean all # removes all things make built, and thus can be replaced by running make again.
-#    > clean program # removes all built executor scripts and corresponding jar files
+#    > clean program # removes all built ${EXECUTOR_IN_DIR} scripts and corresponding jar files
 #    > clean class # removes the class files
 #    > clean grammar # removes the generated java grammar files
 #
@@ -22,16 +22,10 @@ display_usage() {
   echo "Usage: clean <all [<program_name>] | program [<program_name>] | grammar [<name>] | class | temp[orary]>"
 }
 
-# Function to clean a directory
-clean_directory() {
-  local dir="$1"
-  find "$dir" -type f ! -name '.githolder' -exec rm -f {} +
-}
-
-# Function to check if a program is in PROGRAM_FPL
+# Function to check if a program is in EXECUTOR_IN_FPL
 is_program_in_fpl() {
   local program="$1"
-  for prog in $PROGRAM_FPL; do
+  for prog in $EXECUTOR_IN_FPL; do
     if [[ "$prog" == *"$program"* ]]; then
       return 0
     fi
@@ -44,9 +38,9 @@ delete_program() {
   local program="$1"
   if is_program_in_fpl "$program"; then
     echo "Deleting program files for '$program'"
-    rm -f "executor/$program" "$JAVA_COMP_OUT_DIR/$program.jar" "$JAVA_COMP_OUT_DIR/$program.class"
+    rm -f "${EXECUTOR_IN_DIR}/$program" "$JAVA_COMP_OUT_DIR/$program.jar" "$JAVA_COMP_OUT_DIR/$program.class"
   else
-    echo "Error: Program '$program' is not recognized or is not listed in PROGRAM_FPL."
+    echo "Error: Program '$program' is not recognized or is not listed in EXECUTOR_IN_FPL."
     return 1
   fi
 }
@@ -63,24 +57,24 @@ clean_command_parser() {
   elif [ "$token_count" -eq 1 ]; then
     case "$command" in
       "temporary" | "temp")
-        clean_directory "$TEMP_DIR"
+        ${EXECUTOR_IN_DIR}/clean_directory "$TEMP_DIR"
         ;;
       "all")
-        clean_directory "$TEMP_DIR"
-        clean_grammar
-        clean_file_list "JAVA_COMP_OUT_FPL"
-        clean_file_list "JAR_OUT_FPL"
-        clean_file_list "PROGRAM_FPL"
+        ${EXECUTOR_IN_DIR}/clean_directory "$TEMP_DIR"
+        ${EXECUTOR_IN_DIR}/clean_grammar
+        ${EXECUTOR_IN_DIR}/clean_file_list "JAVA_COMP_OUT_FPL"
+        ${EXECUTOR_IN_DIR}/clean_file_list "JAR_OUT_FPL"
+        ${EXECUTOR_IN_DIR}/clean_file_list "EXECUTOR_IN_FPL"
         ;;
       "program")
-        clean_file_list "JAR_OUT_FPL"
-        clean_file_list "PROGRAM_FPL"
+        ${EXECUTOR_IN_DIR}/clean_file_list "JAR_OUT_FPL"
+        ${EXECUTOR_IN_DIR}/clean_file_list "EXECUTOR_IN_FPL"
         ;;
       "class")
-        clean_file_list "JAVA_COMP_OUT_FPL"
+        ${EXECUTOR_IN_DIR}/clean_file_list "JAVA_COMP_OUT_FPL"
         ;;
       "grammar")
-        clean_grammar
+        ${EXECUTOR_IN_DIR}/clean_grammar
         ;;
       *)
         echo "Unknown clean option: $command"
@@ -93,11 +87,11 @@ clean_command_parser() {
         delete_program "$arg"
         # Custom cleaning for each program.
         case "$arg" in
-          "SyntaxTree_Test")
-            clean_grammar "GQL_Test"
+          "Tree_Test")
+            ${EXECUTOR_IN_DIR}/clean_grammar "GQL_Test"
             ;;
-          "SyntaxTree_20240412")
-            clean_grammar "GQL_20240412"
+          "Tree_20240412")
+            ${EXECUTOR_IN_DIR}/clean_grammar "GQL_20240412"
             ;;
           "PrintRuleNameList")
             : 
@@ -113,7 +107,7 @@ clean_command_parser() {
         ;;
       "grammar")
         # Grammar name is $arg.
-        clean_grammar "$arg"
+        ${EXECUTOR_IN_DIR}/clean_grammar "$arg"
         ;;
       *)
         echo "Unknown clean command: $command"
@@ -124,5 +118,6 @@ clean_command_parser() {
   fi
 }
 
-source env_build
+cd "$DEVELOPER_HOME" || { echo "Failed to change directory to" "$DEVELOPER_HOME"; exit 1; }
+source ${EXECUTOR_IN_DIR}/env_build
 clean_command_parser $@

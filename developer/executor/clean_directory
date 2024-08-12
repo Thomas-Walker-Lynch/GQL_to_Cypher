@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# helper function for `clean`, though can be called directly
 
 if [ -z "$1" ]; then
   echo "Error: Directory argument is empty"

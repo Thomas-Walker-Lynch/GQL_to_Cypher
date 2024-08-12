@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.lang.reflect.Method;
 
-public class SyntaxTree_20240412 {
+public class Syntax_20240412 {
 
   // Versioned Lexer and Parser
   static final Class<?> GQL_Lexer = GQL_20240412Lexer.class;
@@ -13,7 +13,7 @@ public class SyntaxTree_20240412 {
 
   public static void main(String[] args) throws IOException {
     if (args.length != 1) {
-      System.err.println("Usage: java SyntaxTree20240412 <input-file>");
+      System.err.println("Usage: java Syntax20240412 <input-file>");
       System.exit(1);
     }
 
@@ -25,11 +25,11 @@ public class SyntaxTree_20240412 {
       CommonTokenStream tokens = new CommonTokenStream(lexer);
       Parser parser = (Parser) GQL_Parser.getConstructor(TokenStream.class).newInstance(tokens);
       Method startRule = parser.getClass().getMethod("program"); // Assuming 'program' is the start rule
-      ParseTree tree = (ParseTree) startRule.invoke(parser);
+      ParseSyntax tree = (ParseSyntax) startRule.invoke(parser);
 
       PrintVisitor visitor = new PrintVisitor(parser.getRuleNames());
-      String syntaxTree = visitor.visit(tree);
-      System.out.println(syntaxTree);
+      String syntaxSyntax = visitor.visit(tree);
+      System.out.println(syntaxSyntax);
     } catch (Exception e) {
       e.printStackTrace();
     }

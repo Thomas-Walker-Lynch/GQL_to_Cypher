@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
+# helper function for `clean`, though can be called directly
 
 # Check if required variables are set
 if [ -z "$ANTLR_GRAMMAR_LIST" ] || [ -z "$ANTLR_OUT_DIR" ]; then
-  echo "Error: Required environment variables ANTLR_GRAMMAR_LIST or ANTLR_OUT_DIR are not set."
+  echo "Error: Required environment variables ANTLR_GRAMMAR_LIST and ANTLR_OUT_DIR are not set."
   exit 1
 fi
 
@@ -22,7 +23,7 @@ delete_grammar() {
 
 # If no argument is given, delete all grammars
 if [ -z "$1" ]; then
-  echo "No argument provided, deleting all grammars"
+  echo "Cleaning all grammar builds."
   for grammar in $ANTLR_GRAMMAR_LIST; do
     delete_grammar "$grammar"
   done

@@ -16,7 +16,26 @@ fi
 # _OUT things output by some program
 
 #--------------------------------------------------------------------------------
-# directories
+# to be built
+
+
+# Add each new executable to this list, and give it a custom target in the makefile.
+export EXECUTOR_IN_FL="\
+  PrintRuleNameList\
+  Arithmetic_Echo\
+  Arithmetic_Echo__Test\
+  Arithmetic_Syntax\
+  20240412_Syntax\
+  "
+
+# where make will put the programs
+export EXECUTOR_IN_DIR="executor"
+
+# Generate the EXECUTOR_IN_FPL list
+export EXECUTOR_IN_FPL=$(for program in $EXECUTOR_IN_FL; do echo "${EXECUTOR_IN_DIR}/${program}"; done | tr '\n' ' ')
+
+#--------------------------------------------------------------------------------
+# build directories
 #
 
 # ANTLR directories
@@ -43,17 +62,6 @@ export JAVA_COMP="${JAVA_HOME}/bin/javac"
 export JAVA_INTERP="${JAVA_HOME}/bin/java"
 export JAVA_ARCHIVE="${JAVA_HOME}/bin/jar"
 export CLASSPATH="$ANTLR_JAR"
-
-#--------------------------------------------------------------------------------
-# to be built
-#
-export PROGRAM_PrintRuleNameList="executor/PrintRuleNameList"
-export PROGRAM_SyntaxTree_Arithmetic="executor/SyntaxTree_Arithmetic"
-export PROGRAM_Test__SyntaxTree_Arithmetic="executor/Test__SyntaxTree_Arithmetic"
-export PROGRAM_SyntaxTree_20240412="executor/SyntaxTree_20240412"
-
-# an all programs list
-export PROGRAM_FPL="${PROGRAM_PrintRuleNameList} ${PROGRAM_SyntaxTree_Arithmetic} ${PROGRAM_SyntaxTree_20240412} ${PROGRAM_Test__SyntaxTree_Arithmetic}"
 
 #--------------------------------------------------------------------------------
 # misc
@@ -109,7 +117,7 @@ export JAVA_COMP_OUT_FPL="${JAVA_COMP_OUT_PRIMARY_FPL} ${JAVA_COMP_OUT_ANTLR_FPL
 
 # List of JAR files to be built
 JAR_OUT_FPL=""
-for program_path in ${PROGRAM_FPL}; do
+for program_path in ${EXECUTOR_IN_FPL}; do
   program_name=$(basename ${program_path})
   class_file="${JAVA_COMP_OUT_DIR}/${program_name}.class"
   # Check if the .class file is in JAVA_COMP_OUT_FPL

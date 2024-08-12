@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 
-cd "$DEVELOPER_HOME" || { echo "Failed to change directory to" "$DEVELOPER_HOME"; exit 1; }
-source executor/env_build
-/usr/bin/make --no-builtin-rules --keep-going $@
+if [[ -z "${DEVELOPER_HOME}" || -z "${EXECUTOR_IN_DIR}" ]]; then
+  echo "required variables not set. As seen by:"
+  echo "  DEVELOPER_HOME: $DEVELOPER_HOME"
+  echo "  EXECUTOR_IN_DIR: $EXECUTOR_IN_DIR"
+  exit 1
+fi
 
+cd "$DEVELOPER_HOME"
+
+# in case there have been edits to the environment
+source "${EXECUTOR_IN_DIR}"/env_build
+
+/usr/bin/make --no-builtin-rules -f "${EXECUTOR_IN_DIR}"/makefile $@

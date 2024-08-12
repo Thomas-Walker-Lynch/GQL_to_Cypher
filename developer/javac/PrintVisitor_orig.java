@@ -1,6 +1,6 @@
-import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+import org.antlr.v4.runtime.tree.AbstractParseSyntaxVisitor;
 
-public class PrintVisitor extends AbstractParseTreeVisitor<String> implements ArithmeticVisitor<String> {
+public class PrintVisitor extends AbstractParseSyntaxVisitor<String> implements ArithmeticVisitor<String> {
     private final String[] ruleNames;
 
     public PrintVisitor(String[] ruleNames) {

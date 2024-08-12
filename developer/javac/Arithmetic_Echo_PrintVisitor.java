@@ -1,9 +1,9 @@
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
-public class PrintVisitor extends ArithmeticBaseVisitor<String> {
+public class Arithmetic_Echo_PrintVisitor extends ArithmeticBaseVisitor<String> {
   private final String[] ruleNames;
 
-  public PrintVisitor(String[] ruleNames) {
+  public Arithmetic_Echo_PrintVisitor(String[] ruleNames) {
     this.ruleNames = ruleNames;
   }
 
