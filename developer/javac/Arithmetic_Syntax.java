@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class Arithmetic_Syntax{
+public class Arithmetic_Syntax {
 
   public static void main(String[] args) throws IOException {
     if (args.length != 1) {
@@ -22,9 +22,9 @@ public class Arithmetic_Syntax{
       ArithmeticParser parser = new ArithmeticParser(tokens);
 
       // Directly calling the start rule method
-      ParseSyntax tree = parser.program(); // Assuming 'program' is the start rule
+      ParseTree tree = parser.program(); // Assuming 'program' is the start rule
 
-      PrintVisitor visitor = new PrintVisitor(parser.getRuleNames());
+      Arithmetic_Syntax_PrintVisitor visitor = new Arithmetic_Syntax_PrintVisitor(parser.getRuleNames());
       String syntaxSyntax = visitor.visit(tree);
       System.out.println(syntaxSyntax);
     } catch (Exception e) {

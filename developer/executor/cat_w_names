@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# Check if any arguments are provided (input files or directories)
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <file1> [file2 ...]"
+  exit 1
+fi
+
+# Loop through all provided arguments (files or directories)
+for file in "$@"; do
+  if [ -f "$file" ]; then
+    echo "#--------------------------------------------------------------------------------"
+    echo "# Filename: ${file}"
+    echo "#"
+    cat "$file"
+  fi
+done

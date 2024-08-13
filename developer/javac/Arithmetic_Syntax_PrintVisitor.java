@@ -1,9 +1,9 @@
-import org.antlr.v4.runtime.tree.AbstractParseSyntaxVisitor;
+import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 public class Arithmetic_Syntax_PrintVisitor extends ArithmeticBaseVisitor<String> {
   private final String[] ruleNames;
 
-  public PrintVisitor(String[] ruleNames) {
+  public Arithmetic_Syntax_PrintVisitor(String[] ruleNames) {
     this.ruleNames = ruleNames;
   }
 

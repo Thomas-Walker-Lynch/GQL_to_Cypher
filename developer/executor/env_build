@@ -8,8 +8,11 @@ fi
 
 # Note these suffixes:
 # _FL  = File List
+# _FP  = File Path
 # _FPL = File Path List 
 # _DL  = Directory List
+# _DP  = Directory path
+# _DPL = Directory path list
 
 # _PRIMARY = stuff not built
 # _IN  things input to some program
@@ -25,6 +28,7 @@ export EXECUTOR_IN_FL="\
   Arithmetic_Echo\
   Arithmetic_Echo__Test\
   Arithmetic_Syntax\
+  Arithmetic_Syntax__Test\
   20240412_Syntax\
   "
 
@@ -51,7 +55,12 @@ export JAVA_COMP_OUT_DIR="jvm"
 
 # JVM
 export JVM_IN_DIR="${JAVA_COMP_OUT_DIR}"
-export CLASSPATH="${CLASSPATH}:${JVM_IN_DIR}"
+
+# The generated build scripts might need arguments that are fully specified paths.
+export DEVELOPER_HOME_DP="/var/user_data/Thomas-developer/GQL_to_Cypher/developer"
+export JVM_IN_DP="$DEVELOPER_HOME_DP/jvm"
+export EXECUTOR_IN_DP="$DEVELOPER_HOME_DP/executor"
+export CLASSPATH="${CLASSPATH}:${JVM_IN_DP}"
 
 #--------------------------------------------------------------------------------
 # tools used

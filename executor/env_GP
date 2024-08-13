@@ -1,0 +1,6 @@
+#!/bin/bash
+# Environment setup for GP
+export GP_PROMPT="GP> "
+export PS1="\[$(tput setaf 2)\]\u@\h:\w$GP_PROMPT\[$(tput sgr0)\] "
+export PROJECT_HOME="/var/user_data/Thomas-developer/GQL_to_Cypher/developer"
+cd $PROJECT_HOME/experiment

@@ -29,6 +29,13 @@ Arithmetic_Syntax: $(ANTLR_OUT_Arithmetic_FPL)
 	fi
 	make $(EXECUTOR_IN_DIR)/Arithmetic_Syntax
 
+Arithmetic_Syntax__Test: $(ANTLR_OUT_Arithmetic_FPL)
+	@if [ -z "$(ANTLR_OUT_Arithmetic_FPL)" ]; then \
+	  echo "variable ANTLR_OUT_Arithmetic_FPL empty."; \
+	  exit 1; \
+	fi
+	make $(EXECUTOR_IN_DIR)/Arithmetic_Syntax__Test
+
 Tree_20240412: $(ANTLR_OUT_GQL_20240412_FPL)
 	@if [ -z "$(ANTLR_OUT_GQL_20240412_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_GQL_20240412_FPL empty."; \
@@ -98,9 +105,9 @@ $(JAVA_COMP_OUT_DIR)/%.jar: $(JAVA_COMP_OUT_DIR)/%.class
 	$(JAVA_ARCHIVE) cf $@ -C $(JAVA_COMP_OUT_DIR) $*.class
 	@echo "Created $@"
 
-$(EXECUTOR_IN_DIR)/%: $(JAVA_COMP_OUT_DIR)/%.jar
+$(EXECUTOR_IN_DIR)/%: $(JVM_IN_DIR)/%.jar
 	@echo "Creating script for $*..."
 	@echo "#!/usr/bin/env bash" > $(EXECUTOR_IN_DIR)/$*
-	@echo "$(JAVA_INTERP) -cp ${CLASSPATH}:$(JAVA_COMP_OUT_DIR):$< $*" \$$\@ >> $(EXECUTOR_IN_DIR)/$*
+	@echo "$(JAVA_INTERP) -cp ${CLASSPATH}:${JVM_IN_DP}:$(JVM_IN_DP)/$*.jar $*" \$$\@ >> $(EXECUTOR_IN_DIR)/$*
 	chmod +x $(EXECUTOR_IN_DIR)/$*
 	@echo "Created script $(EXECUTOR_IN_DIR)/$*"

@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class Arithmetic_Echo__Test {
 
-  public static boolean PrintVisitor_0() {
+  public static boolean Arithmetic_Echo_0() {
     // Simple smoke test
     try {
       String input = "3 + 5";
@@ -18,7 +18,7 @@ public class Arithmetic_Echo__Test {
     }
   }
 
-  public static boolean PrintVisitor_1() {
+  public static boolean Arithmetic_Echo_1() {
     // Test with multiplication
     try {
       String input = "2 * 3";
@@ -30,7 +30,7 @@ public class Arithmetic_Echo__Test {
     }
   }
 
-  public static boolean PrintVisitor_2() {
+  public static boolean Arithmetic_Echo_2() {
     // Test with parentheses
     try {
       String input = "2 * (3 + 4)";
@@ -42,7 +42,7 @@ public class Arithmetic_Echo__Test {
     }
   }
 
-  public static boolean PrintVisitor_3() {
+  public static boolean Arithmetic_Echo_3() {
     // Test with division
     try {
       String input = "10 / 2";
@@ -54,14 +54,14 @@ public class Arithmetic_Echo__Test {
     }
   }
 
-  public static boolean PrintVisitor_4() {
+  public static boolean Arithmetic_Echo_4() {
     // Test with complex expression
     try {
       String input = "3 + 5 * (10 - 4)";
       String expectedOutput = "(3 + (5 * (10 - 4)))";
       String actualOutput = runSyntax(input);
       // Uncomment the print statement for debugging
-      // System.out.println("PrintVisitor_4 - Expected: " + expectedOutput + ", Actual: " + actualOutput);
+      // System.out.println("Arithmetic_Echo_4 - Expected: " + expectedOutput + ", Actual: " + actualOutput);
       return expectedOutput.equals(actualOutput);
     } catch (Exception e) {
       return false;
@@ -81,11 +81,11 @@ public class Arithmetic_Echo__Test {
 
   public static void main(String[] args) {
     Map<String, Boolean> tests = new HashMap<>();
-    tests.put("PrintVisitor_0", PrintVisitor_0());
-    tests.put("PrintVisitor_1", PrintVisitor_1());
-    tests.put("PrintVisitor_2", PrintVisitor_2());
-    tests.put("PrintVisitor_3", PrintVisitor_3());
-    tests.put("PrintVisitor_4", PrintVisitor_4());
+    tests.put("Arithmetic_Echo_0", Arithmetic_Echo_0());
+    tests.put("Arithmetic_Echo_1", Arithmetic_Echo_1());
+    tests.put("Arithmetic_Echo_2", Arithmetic_Echo_2());
+    tests.put("Arithmetic_Echo_3", Arithmetic_Echo_3());
+    tests.put("Arithmetic_Echo_4", Arithmetic_Echo_4());
 
     TestBench.runTests(tests);
   }
