@@ -95,25 +95,27 @@ if [ -z "${ANTLR_IN_PRIMARY_FPL}" ]; then
   echo "No ANTLR input grammar files found"
 fi
 
+# replaced with a tool called ANTLR_OUR_FL
+#
 # This function accepts a grammar name, or a grammar name with an extension; 
 # and sets a variable of the form ANTLR_OUT_<grammar>_FPL to a list of
 # files that ANTLR would produce for <grammar>.
-set_ANTLR_out_fpl_var() {
-  local grammar=$1
-  export ANTLR_OUT_${grammar}_FPL="${ANTLR_OUT_DIR}/${grammar}Lexer.java ${ANTLR_OUT_DIR}/${grammar}Parser.java ${ANTLR_OUT_DIR}/${grammar}BaseVisitor.java ${ANTLR_OUT_DIR}/${grammar}Visitor.java"
-}
+# set_ANTLR_out_fpl_var() {
+#  local grammar=$1
+#  export ANTLR_OUT_${grammar}_FPL="${ANTLR_OUT_DIR}/${grammar}Lexer.java ${ANTLR_OUT_DIR}/${grammar}Parser.java ${ANTLR_OUT_DIR}/${grammar}BaseVisitor.java ${ANTLR_OUT_DIR}/${grammar}Visitor.java"
+# }
 
 # Generate ANTLR_OUT_<grammar>_FPL for each grammar
-for grammar in ${ANTLR_GRAMMAR_LIST}; do
-  set_ANTLR_out_fpl_var ${grammar}
-done
+# for grammar in ${ANTLR_GRAMMAR_LIST}; do
+#  set_ANTLR_out_fpl_var ${grammar}
+# done
 
 # Combine all individual file lists into ANTLR_OUT_FPL
-ANTLR_OUT_FPL=""
-for grammar in ${ANTLR_GRAMMAR_LIST}; do
-  ANTLR_OUT_FPL="${ANTLR_OUT_FPL} $(eval echo \$ANTLR_OUT_${grammar}_FPL)"
-done
-export ANTLR_OUT_FPL
+# ANTLR_OUT_FPL=""
+# for grammar in ${ANTLR_GRAMMAR_LIST}; do
+#   ANTLR_OUT_FPL="${ANTLR_OUT_FPL} $(eval echo \$ANTLR_OUT_${grammar}_FPL)"
+# done
+# export ANTLR_OUT_FPL
 
 #--------------------------------------------------------------------------------
 # Java files 
