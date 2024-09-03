@@ -1,3 +1,8 @@
+/*
+Takes an 'Ariethemetic' grammar source file.  Parses it. Runs through the parse tree
+and recreates the source file.
+
+*/
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import java.io.IOException;

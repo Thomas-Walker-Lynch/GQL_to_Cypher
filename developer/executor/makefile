@@ -5,43 +5,56 @@
 all: setup $(EXECUTOR_IN_FPL)
 
 
-PrintRuleNameList: $(EXECUTOR_PrintRuleNameList)
+PrintRuleNameList: $(EXECUTOR_IN_DIR)/PrintRuleNameList
 
-
-Arithmetic_Echo: $(ANTLR_OUT_Arithmetic_FPL)
+Arithmetic_Echo: $(ANTLR_OUT_Arithmetic_FPL) $(JAVAC_D)/Arithmetic_Echo_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_Arithmetic_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_Arithmetic_FPL empty."; \
 	  exit 1; \
 	fi
 	make $(EXECUTOR_IN_DIR)/Arithmetic_Echo
 
-Arithmetic_Echo__Test: $(ANTLR_OUT_Arithmetic_FPL)
+Arithmetic_Echo__Test: $(ANTLR_OUT_Arithmetic_FPL) $(JAVAC_D)/Arithmetic_Echo_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_Arithmetic_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_Arithmetic_FPL empty."; \
 	  exit 1; \
 	fi
 	make $(EXECUTOR_IN_DIR)/Arithmetic_Echo__Test
 
-Arithmetic_Syntax: $(ANTLR_OUT_Arithmetic_FPL)
+Arithmetic_Syntax: $(ANTLR_OUT_Arithmetic_FPL) $(JAVAC_D)/Arithmetic_Echo_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_Arithmetic_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_Arithmetic_FPL empty."; \
 	  exit 1; \
 	fi
 	make $(EXECUTOR_IN_DIR)/Arithmetic_Syntax
 
-Arithmetic_Syntax__Test: $(ANTLR_OUT_Arithmetic_FPL)
+Arithmetic_Syntax__Test: $(ANTLR_OUT_Arithmetic_FPL) $(JAVAC_D)/Arithmetic_Syntax_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_Arithmetic_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_Arithmetic_FPL empty."; \
 	  exit 1; \
 	fi
 	make $(EXECUTOR_IN_DIR)/Arithmetic_Syntax__Test
 
-Tree_20240412: $(ANTLR_OUT_GQL_20240412_FPL)
+GQL_20240412_Syntax: $(ANTLR_OUT_GQL_20240412_FPL) $(JAVAC_D)/GQL_20240412_Syntax_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_GQL_20240412_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_GQL_20240412_FPL empty."; \
 	  exit 1; \
 	fi
-	make $(EXECUTOR_IN_DIR)/Tree_20240412
+	make $(EXECUTOR_IN_DIR)/GQL_20240412_Syntax
+
+GQL_20240412_Syntax__Test: $(ANTLR_OUT_GQL_20240412_FPL) $(JAVAC_D)/GQL_20240412_Syntax_PrintVisitor.java
+	@if [ -z "$(ANTLR_OUT_GQL_20240412_FPL)" ]; then \
+	  echo "variable ANTLR_OUT_GQL_20240412_FPL empty."; \
+	  exit 1; \
+	fi
+	make $(EXECUTOR_IN_DIR)/GQL_20240412_Syntax__Test
+
+TerminalToCategory: 
+	make $(EXECUTOR_IN_DIR)/TerminalToCategory
+
+GrammarSplitter: 
+	make $(EXECUTOR_IN_DIR)/GrammarSplitter
+
 
 
 # make the `.java` files for all grammars

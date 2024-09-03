@@ -1,5 +1,5 @@
 /*
-Takes an 'Ariethemetic' grammar source file.  Parses it. Outputs an annotated
+Takes an 'GQL_20240412' grammar source file.  Parses it. Outputs an annotated
 version of the source file while labeling what parts of the grammar the syntax
 objects belong to.  Note the -pp option.
 
@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Arithmetic_Syntax {
+public class GQL_20240412_Syntax {
 
   public static void main(String[] arg_array) throws IOException {
     boolean pretty_print = false;
@@ -35,13 +35,13 @@ public class Arithmetic_Syntax {
 
     // If there were any errors, print usage and exit
     if (has_error) {
-      System.err.println("Usage: java Arithmetic_Syntax [-pp] <input-file>");
+      System.err.println("Usage: java GQL_20240412_Syntax [-pp] <input-file>");
       System.exit(1);
     }
 
     // Ensure there is exactly one input file
     if (file_arg_list.size() != 1) {
-      System.err.println("Usage: java Arithmetic_Syntax [-pp] <input-file>");
+      System.err.println("Usage: java GQL_20240412_Syntax [-pp] <input-file>");
       System.exit(1);
     }
 
@@ -49,12 +49,12 @@ public class Arithmetic_Syntax {
     String input = Files.readString(Paths.get(input_file));
 
     try {
-      ArithmeticLexer lexer = new ArithmeticLexer(CharStreams.fromString(input));
+      GQL_20240412Lexer lexer = new GQL_20240412Lexer(CharStreams.fromString(input));
       CommonTokenStream tokens = new CommonTokenStream(lexer);
-      ArithmeticParser parser = new ArithmeticParser(tokens);
+      GQL_20240412Parser parser = new GQL_20240412Parser(tokens);
       ParseTree tree = parser.program();
 
-      Arithmetic_Syntax_PrintVisitor visitor = new Arithmetic_Syntax_PrintVisitor(parser.getRuleNames(), pretty_print);
+      GQL_20240412_Syntax_PrintVisitor visitor = new GQL_20240412_Syntax_PrintVisitor(parser.getRuleNames(), pretty_print);
       String output = visitor.visit(tree);
       System.out.println(output);
     } catch (Exception e) {

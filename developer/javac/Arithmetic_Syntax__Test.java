@@ -59,7 +59,7 @@ public class Arithmetic_Syntax__Test {
     ArithmeticParser parser = new ArithmeticParser(tokens);
     ParseTree tree = parser.program(); // Directly calling the start rule method
 
-    Arithmetic_Syntax_PrintVisitor visitor = new Arithmetic_Syntax_PrintVisitor(parser.getRuleNames());
+    Arithmetic_Syntax_PrintVisitor visitor = new Arithmetic_Syntax_PrintVisitor(parser.getRuleNames() ,false);
     return visitor.visit(tree);
   }
 

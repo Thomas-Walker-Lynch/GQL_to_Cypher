@@ -21,15 +21,23 @@ fi
 #--------------------------------------------------------------------------------
 # to be built
 
+# export PROGRAM_PrintRuleNameList="executor/PrintRuleNameList"
+# export PROGRAM_SyntaxTree_Arithmetic="executor/SyntaxTree_Arithmetic"
+# export PROGRAM_Test__SyntaxTree_Arithmetic="executor/Test__SyntaxTree_Arithmetic"
+# export PROGRAM_SyntaxTree_20240412="executor/SyntaxTree_20240412"
+
 
 # Add each new executable to this list, and give it a custom target in the makefile.
 export EXECUTOR_IN_FL="\
   PrintRuleNameList\
+  TerminalToCategory\
+  GrammarSplitter\
   Arithmetic_Echo\
   Arithmetic_Echo__Test\
   Arithmetic_Syntax\
   Arithmetic_Syntax__Test\
-  20240412_Syntax\
+  GQL_20240412_Syntax\
+  GQL_20240412_Syntax__Test\
   "
 
 # where make will put the programs
@@ -70,7 +78,7 @@ export CLASSPATH="${CLASSPATH}:${JVM_IN_DP}"
 export JAVA_COMP="${JAVA_HOME}/bin/javac"
 export JAVA_INTERP="${JAVA_HOME}/bin/java"
 export JAVA_ARCHIVE="${JAVA_HOME}/bin/jar"
-export CLASSPATH="$ANTLR_JAR"
+export CLASSPATH="${CLASSPATH}:$ANTLR_JAR"
 
 #--------------------------------------------------------------------------------
 # misc
