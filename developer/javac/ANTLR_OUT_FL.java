@@ -1,49 +1,80 @@
 /*
+Run the command with no arguments for a usage message.
 
 Accepts an antlr grammar file name of the form: [path/]<name>[Lexer/Parser][.g4]
 
-Prints a space separated list of files antlr4 would output.
+Prints a space-separated list of files antlr4 would output.
 
 The <name>Lexer or <name>Parser suffix, or absence thereof, tell this program if
 antlr would create lexer and parser files, or both.
 
-The `-visitor` and `no-lsistner` options also affect the output, as they would
-for antlr.
 
 */
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ANTLR_OUT_FL {
 
+    // Constant for the usage message
+    private static final String USAGE_MESSAGE = "Usage: java ANTLR_OUT_FL <grammar-file> " +
+            "[-visitor (default)] [-no-visitor] " +
+            "[-listener] [-no-listener (default)] " +
+            "[-tokens] [-no-tokens (default)] " +
+            "[-path <path>]";
+
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.err.println("Usage: java ANTLR_OUT_FL <grammar-file> [-visitor] [-no-listener]");
+            System.err.println(USAGE_MESSAGE);
             System.exit(1);
         }
 
-        boolean visitor = false;
-        boolean noListener = false;
-        boolean noTokens = false;
+        // Defaults
+        boolean visitor = true;
+        boolean noListener = true;
+        boolean noTokens = true;
+        String outputPath = "";  // Default empty path
         List<String> argList = new ArrayList<>();
 
         // Parse the arguments
-        for (String arg : args) {
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
             if (arg.startsWith("-")) {
                 switch (arg) {
                     case "-visitor":
                         visitor = true;
                         break;
+                    case "-no-visitor":
+                        visitor = false;
+                        break;
+                    case "-listener":
+                        noListener = false;
+                        break;
                     case "-no-listener":
                         noListener = true;
+                        break;
+                    case "-tokens":
+                        noTokens = false;
                         break;
                     case "-no-tokens":
                         noTokens = true;
                         break;
+                    case "-path":
+                        // Ensure the next argument exists and isn't another option
+                        if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
+                            outputPath = args[++i];  // Get the next argument as the path
+                            if (!outputPath.endsWith("/")) {
+                                outputPath += "/";  // Ensure the path ends with a slash
+                            }
+                        } else {
+                            System.err.println(USAGE_MESSAGE);
+                            System.exit(1);
+                        }
+                        break;
                     default:
                         System.err.println("Unrecognized option: " + arg);
-                        System.err.println("Usage: java ANTLR_OUT_FL <grammar-file> [-visitor] [-no-listener]");
+                        System.err.println(USAGE_MESSAGE);
                         System.exit(1);
                 }
             } else {
@@ -53,13 +84,13 @@ public class ANTLR_OUT_FL {
 
         // Ensure there is exactly one grammar file argument
         if (argList.size() != 1) {
-            System.err.println("Usage: java ANTLR_OUT_FL <grammar-file> [-visitor] [-no-listener]");
+            System.err.println(USAGE_MESSAGE);
             System.exit(1);
         }
 
         String grammarFile = argList.get(0);
 
-        List<String> generatedFiles = generateFileList(grammarFile, visitor, noListener ,noTokens);
+        List<String> generatedFiles = generateFileList(grammarFile, visitor, noListener, noTokens, outputPath);
 
         // Print the files in a space-separated format on a single line
         if (!generatedFiles.isEmpty()) {
@@ -71,7 +102,7 @@ public class ANTLR_OUT_FL {
         System.out.println(); // Print a newline at the end
     }
 
-  public static List<String> generateFileList(String grammarFile, boolean visitor, boolean noListener ,boolean noTokens) {
+    public static List<String> generateFileList(String grammarFile, boolean visitor, boolean noListener, boolean noTokens, String outputPath) {
         String baseName = new File(grammarFile).getName().replace(".g4", "");
         List<String> fileList = new ArrayList<>();
 
@@ -82,25 +113,25 @@ public class ANTLR_OUT_FL {
 
         if (isLexer || isCombined) {
             // Lexer files
-            fileList.add(baseName + "Lexer.java");
-            if (!noTokens) fileList.add(baseName + "Lexer.tokens");
+            fileList.add(outputPath + baseName + "Lexer.java");
+            if (!noTokens) fileList.add(outputPath + baseName + "Lexer.tokens");
         }
 
         if (isParser || isCombined) {
             // Parser files
-            fileList.add(baseName + "Parser.java");
-            if (!noTokens) fileList.add(baseName + ".tokens");
+            fileList.add(outputPath + baseName + "Parser.java");
+            if (!noTokens) fileList.add(outputPath + baseName + ".tokens");
 
             // Listener-related files
             if (!noListener) {
-                fileList.add(baseName + "Listener.java");
-                fileList.add(baseName + "BaseListener.java");
+                fileList.add(outputPath + baseName + "Listener.java");
+                fileList.add(outputPath + baseName + "BaseListener.java");
             }
 
             // Visitor-related files
             if (visitor) {
-                fileList.add(baseName + "Visitor.java");
-                fileList.add(baseName + "BaseVisitor.java");
+                fileList.add(outputPath + baseName + "Visitor.java");
+                fileList.add(outputPath + baseName + "BaseVisitor.java");
             }
         }
 

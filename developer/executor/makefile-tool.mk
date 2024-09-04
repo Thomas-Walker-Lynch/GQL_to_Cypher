@@ -1,13 +1,14 @@
 
-$(info makefile: $(MAKEFILE_LIST))
-$(info project_MAKECMDGOALS: $(MAKECMDGOALS))
-
 # turn off implicit rules
 .SUFFIXES:
 MAKEFLAGS += -r
 
 # `make` always tries to make its makefiles as targets. This prevents that.
-.SECONDARY: $(MAKEFILE_LIST)
+.PHONY: $(MAKEFILE_LIST)
+.PRECIOUS: $(MAKEFILE_LIST)
+
+$(info makefile: $(MAKEFILE_LIST))
+$(info project_MAKECMDGOALS: $(MAKECMDGOALS))
 
 #================================================================================
 # Custom make targets

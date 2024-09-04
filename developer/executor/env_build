@@ -1,39 +1,44 @@
 #!/usr/bin/env bash
 
-# Ensure the script is sourced
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-  echo "This script must be sourced, not executed. Exiting."
-  return 1
-fi
-
-# Note these suffixes:
+# The build environment. 
+#
+# Hopefully no edits are required here to build this project's programs.
+#
+# The most common edit here is to add the name of a new program to the EXECUTOR_IN_FL.
+# That variable is found in the next section.
+#
+# The `env_dev` script should have been sourced already. (env_dev is analogous
+# to the Python virutal environment `activate`.)  `env_dev` will set `developer/executor/`
+# first in the search PATH.  In that directory there is a script called `make` which
+# is a wrapper to `/bin/make`.  That script sources this file.  Hence, this file
+# is the environment for make, aka the build environment.
+#
+# Note these suffixes found on variable names:
 # _FL  = File List
 # _FP  = File Path
 # _FPL = File Path List 
 # _DL  = Directory List
 # _DP  = Directory path
 # _DPL = Directory path list
-
+#
 # _PRIMARY = stuff not built
 # _IN  things input to some program
 # _OUT things output by some program
+#
+# Relative paths values are relative to the $REPO_HOME/developer directory, unless
+# for good reason which is obvious or stated in a comment adjacent to the variable.
+
+
+# Ensure the script is sourced rather than run directly
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  echo "This script must be sourced, not executed. Exiting."
+  return 1
+fi
 
 #--------------------------------------------------------------------------------
-# commands
+# programs to be built
+# each new executable will also need a custom target in makefile-project.mk
 
-export BIN_MAKE=/bin/make
-
-
-#--------------------------------------------------------------------------------
-# to be built
-
-# export PROGRAM_PrintRuleNameList="executor/PrintRuleNameList"
-# export PROGRAM_SyntaxTree_Arithmetic="executor/SyntaxTree_Arithmetic"
-# export PROGRAM_Test__SyntaxTree_Arithmetic="executor/Test__SyntaxTree_Arithmetic"
-# export PROGRAM_SyntaxTree_20240412="executor/SyntaxTree_20240412"
-
-
-# Add each new executable to this list, and give it a custom target in the makefile.
 export EXECUTOR_IN_FL="\
   PrintRuleNameList\
   TerminalToCategory\
@@ -81,6 +86,7 @@ export CLASSPATH="${CLASSPATH}:${JVM_IN_DP}"
 #
 #  set by project manager: JAVA_HOME, ANTLR_JAR, DEVELOPER_HOME
 #
+export BIN_MAKE=/bin/make
 export JAVA_COMP="${JAVA_HOME}/bin/javac"
 export JAVA_INTERP="${JAVA_HOME}/bin/java"
 export JAVA_ARCHIVE="${JAVA_HOME}/bin/jar"
@@ -94,34 +100,11 @@ export TEMP_DIR="$DEVELOPER_HOME"/temporary
 #--------------------------------------------------------------------------------
 # ANTLR files
 #
-
 export ANTLR_IN_PRIMARY_FPL=$(ls ${ANTLR_IN_PRIMARY_DIR}/*.g4 2>/dev/null | tr '\n' ' ')
 export ANTLR_GRAMMAR_LIST=$(basename -s .g4 ${ANTLR_IN_PRIMARY_FPL})
 if [ -z "${ANTLR_IN_PRIMARY_FPL}" ]; then
   echo "No ANTLR input grammar files found"
 fi
-
-# replaced with a tool called ANTLR_OUR_FL
-#
-# This function accepts a grammar name, or a grammar name with an extension; 
-# and sets a variable of the form ANTLR_OUT_<grammar>_FPL to a list of
-# files that ANTLR would produce for <grammar>.
-# set_ANTLR_out_fpl_var() {
-#  local grammar=$1
-#  export ANTLR_OUT_${grammar}_FPL="${ANTLR_OUT_DIR}/${grammar}Lexer.java ${ANTLR_OUT_DIR}/${grammar}Parser.java ${ANTLR_OUT_DIR}/${grammar}BaseVisitor.java ${ANTLR_OUT_DIR}/${grammar}Visitor.java"
-# }
-
-# Generate ANTLR_OUT_<grammar>_FPL for each grammar
-# for grammar in ${ANTLR_GRAMMAR_LIST}; do
-#  set_ANTLR_out_fpl_var ${grammar}
-# done
-
-# Combine all individual file lists into ANTLR_OUT_FPL
-# ANTLR_OUT_FPL=""
-# for grammar in ${ANTLR_GRAMMAR_LIST}; do
-#   ANTLR_OUT_FPL="${ANTLR_OUT_FPL} $(eval echo \$ANTLR_OUT_${grammar}_FPL)"
-# done
-# export ANTLR_OUT_FPL
 
 #--------------------------------------------------------------------------------
 # Java files 
