@@ -1,20 +1,8 @@
-
-$(info makefile: $(MAKEFILE_LIST))
-$(info project_MAKECMDGOALS: $(MAKECMDGOALS))
-
-# turn off implicit rules
-.SUFFIXES:
-MAKEFLAGS += -r
-
-# `make` always tries to make its makefiles as targets. This prevents that.
-.SECONDARY: $(MAKEFILE_LIST)
-
 #================================================================================
 # Custom make targets
 #
-.PHONY: tool
 
-tool: ANTLR_OUT_FL
+all: ANTLR_OUT_FL
 
 ANTLR_OUT_FL: $(EXECUTOR_IN_DIR)/ANTLR_OUT_FL
 

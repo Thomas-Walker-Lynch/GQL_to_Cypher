@@ -12,4 +12,4 @@ cd "$DEVELOPER_HOME"
 # in case there have been edits to the environment
 source "${EXECUTOR_IN_DIR}"/env_build
 
-${BIN_MAKE} --no-print-directory -f "${EXECUTOR_IN_DIR}"/makefile-top.mk $@
+${BIN_MAKE} --no-builtin-rules -f "${EXECUTOR_IN_DIR}"/makefile-top.mk $@

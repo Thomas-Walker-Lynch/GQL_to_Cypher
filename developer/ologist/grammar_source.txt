@@ -1,0 +1,11 @@
+
+GQL grammar came from:
+   https://github.com/opengql/grammar.git
+
+ANTLR grammar came from:
+   Note the antlr gammar on this site, many grammars listed.
+   https://github.com/antlr/grammars-v4
+
+Cypher movies example:
+  https://github.com/neo4j-graph-examples/movies/blob/main/scripts/movies.cypher
+
