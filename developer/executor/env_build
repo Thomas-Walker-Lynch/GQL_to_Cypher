@@ -19,6 +19,12 @@ fi
 # _OUT things output by some program
 
 #--------------------------------------------------------------------------------
+# commands
+
+export BIN_MAKE=/bin/make
+
+
+#--------------------------------------------------------------------------------
 # to be built
 
 # export PROGRAM_PrintRuleNameList="executor/PrintRuleNameList"
