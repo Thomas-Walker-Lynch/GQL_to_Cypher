@@ -27,7 +27,9 @@
 #
 # Relative paths values are relative to the $REPO_HOME/developer directory, unless
 # for good reason which is obvious or stated in a comment adjacent to the variable.
-
+#
+# This has not yet been split into 'tools'  and 'project'. The redundant build targets
+# should discovered to have already been built.
 
 # Ensure the script is sourced rather than run directly
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
@@ -36,8 +38,11 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
 fi
 
 #--------------------------------------------------------------------------------
-# programs to be built
+# project programs to be built
 # each new executable will also need a custom target in makefile-project.mk
+#
+# Tool programs to be built are not placed in this list.  the makefile-tool.mk
+# file handles them explicitly.
 
 export EXECUTOR_IN_FL="\
   PrintRuleNameList\
