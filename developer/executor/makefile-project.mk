@@ -33,13 +33,13 @@ all: $(EXECUTOR_IN_FPL)
 #-----------------------------------------------
 # A utility for viewing all the rules in a grammar
 
-PrintRuleNameList: $(EXECUTOR_IN_DIR)/PrintRuleNameList
+PrintRuleNameListRegx: $(EXECUTOR_IN_DIR)/PrintRuleNameListRegx
 
 #-----------------------------------------------
 # Arithmetic
 
 ANTLR_OUT_Arithmetic_FPL:= $(shell ANTLR_OUT_FL Arithmetic -path $(ANTLR_OUT_DIR))
-$(info ANTLR_OUT_Arithmetic_FPL: $(ANTLR_OUT_Arithmetic_FPL))
+#$(info ANTLR_OUT_Arithmetic_FPL: $(ANTLR_OUT_Arithmetic_FPL))
 Arithmetic_Echo:\
   $(ANTLR_OUT_Arithmetic_FPL)\
   $(JAVA_COMP_IN_PRIMARY_DIR)/Arithmetic_Echo_PrintVisitor.java

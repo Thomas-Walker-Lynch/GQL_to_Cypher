@@ -14,7 +14,7 @@ public class PrintRuleNameListRegx {
 
   public static void main(String[] args) {
     if (args.length != 1) {
-      System.out.println("Usage: java GrammarRuleExtractor <path-to-g4-file>");
+      System.out.println("Usage: PrintRuleNameListRegx <path-to-g4-file>");
       return;
     }
 

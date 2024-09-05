@@ -42,7 +42,7 @@ fi
 #
 
 export EXECUTOR_IN_FL="\
-  PrintRuleNameList\
+  PrintRuleNameListRegx\
   TerminalToCategory\
   GrammarSplitter\
   Arithmetic_Echo\
