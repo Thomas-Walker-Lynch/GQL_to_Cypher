@@ -42,13 +42,14 @@ fi
 #
 
 export EXECUTOR_IN_FL="\
-  PrintRuleNameListRegx\
-  TerminalToCategory\
-  GrammarSplitter\
+  RuleNameListRegx\
+  RuleNameList\
+  ANTLRv4_RuleNameList\
   Arithmetic_Echo\
   Arithmetic_Echo__Test\
   Arithmetic_Syntax\
   Arithmetic_Syntax__Test\
+  ANTLRv4_Syntax\
   GQL_20240412_Syntax\
   GQL_20240412_Syntax__Test\
   "
@@ -142,3 +143,5 @@ for program_path in ${EXECUTOR_IN_FPL}; do
 done
 export JAR_OUT_FPL
 
+
+#  LocalWords:  ANTLRv PrintRuleNameListRegx

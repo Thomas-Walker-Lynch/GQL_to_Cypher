@@ -1,28 +1,26 @@
 
 # Project management
 
-Please read documents in the ./lector directory for information
-about managing this project and using the tools, if any.
+As you are reading this you might be a GQL_to_Cypter-ologist.  Please read
+documents in the ./ologist directory for project information, and the
+documents in the developer/ologist directory for documents on building
+the project.
 
-For developers, get started by typing:
+The project top level is for project management and imported tools. Developers
+do development work in the `developer` directory.
+
+For developers, from the top of the project get started by typing:
 ```
-> . developer_init
+> . executor/env_dev
 ``
 
-That is similar to the `activate` of Python.
+This will setup the environment and `cd` to the developer directory.  (`env_dev`
+is analogous to the Python virtual environment `activate`.)
 
 # About
 
-This is a transpiler from GQL to Cypher.
-
-The `syntax_recognizer` accepts a GQL query and then outputs a 
-the syntax found as an XML file.
-
-# State of development
-
-Working on the `syntax_recognizer`.
+This is a project to develope a transpiler from GQL to Cypher.
 
 
 
-<!--  LocalWords:  subdirectories transpiles Cypher transpiler
- -->
+

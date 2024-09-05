@@ -33,7 +33,8 @@ all: $(EXECUTOR_IN_FPL)
 #-----------------------------------------------
 # A utility for viewing all the rules in a grammar
 
-PrintRuleNameListRegx: $(EXECUTOR_IN_DIR)/PrintRuleNameListRegx
+RuleNameListRegx: $(EXECUTOR_IN_DIR)/RuleNameListRegx
+RuleNameList: $(EXECUTOR_IN_DIR)/RuleNameList
 
 #-----------------------------------------------
 # Arithmetic
@@ -75,6 +76,23 @@ Arithmetic_Syntax__Test:\
 	  exit 1; \
 	fi
 	$(REMAKE) $(EXECUTOR_IN_DIR)/Arithmetic_Syntax__Test
+
+
+#-----------------------------------------------
+# Parsing/Analyzing ANTLR grammars
+#
+
+ANTLR_OUT_ANTLRv4_FPL:= $(shell ANTLR_OUT_FL ANTLRv4 -path $(ANTLR_OUT_DIR))
+ANTLRv4_Syntax:\
+  $(ANTLR_OUT_ANTLRv4_FPL)\
+  $(JAVA_COMP_IN_PRIMARY_DIR)/ANTLRv4_Syntax_PrintVisitor.java
+	@if [ -z "$(ANTLR_OUT_ANTLRv4_FPL)" ]; then \
+	  echo "variable ANTLR_OUT_ANTLRv4_FPL empty."; \
+	  exit 1; \
+	fi
+	$(REMAKE) $(EXECUTOR_IN_DIR)/ANTLRv4_Syntax
+
+
 
 #-----------------------------------------------
 #  GQL_20240412
@@ -129,14 +147,39 @@ java: $(JAVA_COMP_OUT_FPL)
 # $(ANTLR_OUT_DIR)/%Visitor.java: $(ANTLR_IN_PRIMARY_DIR)/%.g4
 # 	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
 
+#--------------------
+# for a single `<name>.g4` grammar file
 $(ANTLR_OUT_DIR)/%Lexer.java \
 $(ANTLR_OUT_DIR)/%Parser.java \
 $(ANTLR_OUT_DIR)/%BaseListener.java \
 $(ANTLR_OUT_DIR)/%Listener.java \
 $(ANTLR_OUT_DIR)/%BaseVisitor.java \
 $(ANTLR_OUT_DIR)/%Visitor.java: $(ANTLR_IN_PRIMARY_DIR)/%.g4
-	@echo "making grammar from:" $<
+	@echo "copiling grammar from:" $<
 	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
+
+#--------------------
+# For separate `<mame>Lexer.g4` and `<name>Parser.g4` files.
+# `make` prefers shorter pattern matches, so this should work.
+#
+
+$(ANTLR_OUT_DIR)/LexerAdaptor.java: $(ANTLR_IN_PRIMARY_DIR)/LexerAdaptor.java
+	cp $(ANTLR_IN_PRIMARY_DIR)/LexerAdaptor.java $(ANTLR_OUT_DIR)
+
+$(ANTLR_OUT_DIR)/%Lexer.java: $(ANTLR_IN_PRIMARY_DIR)/%Lexer.g4 $(ANTLR_OUT_DIR)/LexerAdaptor.java
+	@echo "making lexer grammar from:" $<
+	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -o $(ANTLR_OUT_DIR_PARENT) $<
+
+# Rule for all generated files from Parser.g4
+$(ANTLR_OUT_DIR)/%Parser.java \
+$(ANTLR_OUT_DIR)/%BaseListener.java \
+$(ANTLR_OUT_DIR)/%Listener.java \
+$(ANTLR_OUT_DIR)/%BaseVisitor.java \
+$(ANTLR_OUT_DIR)/%Visitor.java: $(ANTLR_IN_PRIMARY_DIR)/%Parser.g4
+	@echo "making other grammar files from:" $<
+	$(JAVA_INTERP) -jar $(ANTLR_JAR) -Dlanguage=Java -visitor -lib $(ANTLR_OUT_DIR) -o $(ANTLR_OUT_DIR_PARENT) $<
+
+#--------------------------------------------------------------------------------
 
 # Rule to build .class files from .java files
 $(JAVA_COMP_OUT_DIR)/%.class: $(JAVA_COMP_IN_PRIMARY_DIR)/%.java
@@ -153,6 +196,7 @@ $(JAVA_COMP_OUT_DIR)/%.jar: $(JAVA_COMP_OUT_DIR)/%.class
 	$(JAVA_ARCHIVE) cf $@ -C $(JAVA_COMP_OUT_DIR) $*.class
 	@echo "Created $@"
 
+#--------------------
 $(EXECUTOR_IN_DIR)/%: $(JVM_IN_DIR)/%.jar
 	@echo "Creating script for $*..."
 	@echo "#!/usr/bin/env bash" > $(EXECUTOR_IN_DIR)/$*

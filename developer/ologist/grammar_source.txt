@@ -5,6 +5,11 @@ GQL grammar came from:
 ANTLR grammar came from:
    Note the antlr gammar on this site, many grammars listed.
    https://github.com/antlr/grammars-v4
+   It came as four files:
+     ANTLRv4Lexer.g4
+     ANTLRv4Parser.g4
+     LexBasic.g4
+     LexerAdaptor.java
 
 Cypher movies example:
   https://github.com/neo4j-graph-examples/movies/blob/main/scripts/movies.cypher

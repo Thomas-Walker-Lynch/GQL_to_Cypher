@@ -46,8 +46,7 @@ clean:
 	@echo "Use the command `clean <option>` instead of make.`"
 
 setup:
-	mkdir -p $(ANTLR_IN_PRIMARY_DIR) $(JAVA_COMP_IN_PRIMARY_DIR) $(JVM_IN_DIR)
-	mkdir -p $(EXECUTOR_IN_DIR) test deprecated experiment ologist temporary
+	mkdir -p $(ANTLR_IN_PRIMARY_DIR) $(JAVA_COMP_IN_PRIMARY_DIR) $(JVM_IN_DIR) $(EXECUTOR_IN_DIR) test deprecated experiment ologist temporary
 
 # Ensure tools are built before building the project programs
 tool-%: setup
