@@ -12,11 +12,4 @@ cd "$DEVELOPER_HOME"
 # in case there have been edits to the environment
 source "${EXECUTOR_IN_DIR}"/env_build
 
-# If make is called with no arguments, we will make the entire project.
-# Making the project has a dependency on the tools, so if they have not
-# been made, they will be made before the project is made.
-if [[ $# -eq 0 ]]; then
-  set -- "project"
-fi
-
 ${BIN_MAKE} --no-print-directory -f "${EXECUTOR_IN_DIR}"/makefile-top.mk $@

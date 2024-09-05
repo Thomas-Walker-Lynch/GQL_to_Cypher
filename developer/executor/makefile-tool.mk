@@ -1,21 +1,34 @@
+#================================================================================
+# Build the tools that are needed for building the project.
+#
 
-# turn off implicit rules
+# turn off implicit rules, because they can do unexpected things.
 .SUFFIXES:
 MAKEFLAGS += -r
 
-# `make` always tries to make its makefiles as targets. This prevents that.
+# Turns off the "feature" where `make` tries to make its makefiles as file targets. There
+# is no command line switch to turn this off.
 .PHONY: $(MAKEFILE_LIST)
+
+# 'make' has a "feature" where it deletes what it determines to be intermediate
+# files.  There is no command line switch to turn this behavior off. Combine
+# this feature with implicit rules to have loads of fun. At least this prevents
+# make from deleting its makefiles if it happens to decide one is an
+# intermediate file.
 .PRECIOUS: $(MAKEFILE_LIST)
 
-$(info makefile: $(MAKEFILE_LIST))
-$(info project_MAKECMDGOALS: $(MAKECMDGOALS))
+#$(info makefile: $(MAKEFILE_LIST))
+#$(info project_MAKECMDGOALS: $(MAKECMDGOALS))
+
+# for recursive make without leaving this makefile
+REMAKE = $(MAKE) -$(MAKEFLAGS) -f $(MAKEFILE_LIST)
 
 #================================================================================
 # Custom make targets
 #
 .PHONY: tool
 
-tool: ANTLR_OUT_FL
+all: ANTLR_OUT_FL
 
 ANTLR_OUT_FL: $(EXECUTOR_IN_DIR)/ANTLR_OUT_FL
 

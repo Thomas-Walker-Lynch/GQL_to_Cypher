@@ -19,4 +19,8 @@ export DEVELOPER_HOME="$REPO_HOME/developer"
 export PATH="$DEVELOPER_HOME"/executor:"$REPO_HOME"/tool/executor:"$JAVA_HOME"/bin:"$PATH"
 cd "$DEVELOPER_HOME"
 
+# This is helpful so that cut and paste from the makefile to the shell can be used for testing.
+# When making use of this, the developer must resource env_build into the shell after modifications.
+source "$DEVELOPER_HOME"/executor/env_build
+
 echo "${BASH_SOURCE[0]}" "complete"

@@ -1,28 +1,36 @@
-# In GNU make, pattern matches can not be empty strings.
-# `> make project`, or `make project-project` makes the entire project
-# `> make tool-tool` makes all the tools (while not making the project).
+#================================================================================
+# top level makefile calls makefile-tool and makefile-project
+#
 
-# turn off implicit rules
+# turn off implicit rules, because they can do unexpected things.
 .SUFFIXES:
 MAKEFLAGS += -r
 
-# `make` always tries to make its make files as target files. This prevents that.
+# Turns off the "feature" where `make` tries to make its makefiles as file targets. There
+# is no command line switch to turn this off.
 .PHONY: $(MAKEFILE_LIST)
+
+# 'make' has a "feature" where it deletes what it determines to be intermediate
+# files.  There is no command line switch to turn this behavior off. Combine
+# this feature with implicit rules to have loads of fun. At least this prevents
+# make from deleting its makefiles if it happens to decide one is an
+# intermediate file.
 .PRECIOUS: $(MAKEFILE_LIST)
 
-$(info makefile: $(MAKEFILE_LIST))
-$(info project_MAKECMDGOALS: $(MAKECMDGOALS))
+#$(info makefile: $(MAKEFILE_LIST))
+#$(info project_MAKECMDGOALS: $(MAKECMDGOALS))
 
+# for recursive make without leaving this makefile
+REMAKE = $(MAKE) -$(MAKEFLAGS) -f $(MAKEFILE_LIST)
 
 #================================================================================
 # Custom make targets
 #
-.PHONY: top version clean setup
+.PHONY: all nothing version clean setup
 
-# The 'all' target now depends on 'tool' and 'project'
-top: setup tool-tool project-project
+all: project-all
 
-# for distinguishing between make syntax errors and build errors
+# useful for distinguishing between make syntax errors and build errors
 nothing:
 	@:
 
@@ -45,7 +53,7 @@ setup:
 tool-%: setup
 	$(BIN_MAKE) -f $(EXECUTOR_IN_DIR)/makefile-tool.mk -$(MAKEFLAGS) $*
 
-project-%: tool-tool
+project-%: tool-all
 	$(BIN_MAKE) -f $(EXECUTOR_IN_DIR)/makefile-project.mk -$(MAKEFLAGS) $*
 
 # delegate other targets to the project

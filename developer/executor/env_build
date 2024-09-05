@@ -38,11 +38,8 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
 fi
 
 #--------------------------------------------------------------------------------
-# project programs to be built
-# each new executable will also need a custom target in makefile-project.mk
+# programs to be built by make project-all (or more simply `make`)
 #
-# Tool programs to be built are not placed in this list.  the makefile-tool.mk
-# file handles them explicitly.
 
 export EXECUTOR_IN_FL="\
   PrintRuleNameList\
@@ -63,7 +60,7 @@ export EXECUTOR_IN_DIR="executor"
 export EXECUTOR_IN_FPL=$(for program in $EXECUTOR_IN_FL; do echo "${EXECUTOR_IN_DIR}/${program}"; done | tr '\n' ' ')
 
 #--------------------------------------------------------------------------------
-# build directories
+# developer build directories
 #
 
 # ANTLR directories

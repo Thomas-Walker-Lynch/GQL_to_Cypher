@@ -24,7 +24,7 @@ public class Arithmetic_Syntax__Test {
   public static boolean Arithmetic_Syntax_2() {
     return runTest(
       "Arithmetic_Syntax__Test_2.txt" 
-      ,"program(expression(INT(2) operator(*) expression(INT(3) operator(+) INT(4))))"
+      ,"program(expression(INT(2) operator(*) (expression(INT(3) operator(+) INT(4)))))"
       );
   }
 
@@ -38,7 +38,7 @@ public class Arithmetic_Syntax__Test {
   public static boolean Arithmetic_Syntax_4() {
     return runTest(
       "Arithmetic_Syntax__Test_4.txt" 
-      ,"program(expression(INT(3) operator(+) expression(INT(5) operator(*) expression(INT(10) operator(-) INT(4)))))"
+      ,"program(expression(INT(3) operator(+) expression(INT(5) operator(*) (expression(INT(10) operator(-) INT(4))))))"
       );
   }
 
