@@ -18,6 +18,7 @@ public class Arithmetic_Syntax {
     boolean pretty_print = false;
     List<String> file_arg_list = new ArrayList<>();
     boolean has_error = false;
+    String usage = "Usage: Arithmetic_Syntax [-pp] <source-file>"
 
     // Parse the options and arguments
     for (String arg : arg_array) {
@@ -35,13 +36,13 @@ public class Arithmetic_Syntax {
 
     // If there were any errors, print usage and exit
     if (has_error) {
-      System.err.println("Usage: java Arithmetic_Syntax [-pp] <input-file>");
+      System.err.println(usage);
       System.exit(1);
     }
 
     // Ensure there is exactly one input file
     if (file_arg_list.size() != 1) {
-      System.err.println("Usage: java Arithmetic_Syntax [-pp] <input-file>");
+      System.err.println("usage");
       System.exit(1);
     }
 

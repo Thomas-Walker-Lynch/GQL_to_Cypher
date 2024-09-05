@@ -1,20 +1,21 @@
 #================================================================================
 # top level makefile calls makefile-tool and makefile-project
 #
+# GNU makefile
 
 # turn off implicit rules, because they can do unexpected things.
 .SUFFIXES:
 MAKEFLAGS += -r
 
-# Turns off the "feature" where `make` tries to make its makefiles as file targets. There
-# is no command line switch to turn this off.
+# `make` considers that PHONY targets do not correspond to files (other
+# targets do and the files have their dates checked). This declaration renders
+# innocuous the "feature" where `make` always tries to make its own
+# makefiles. There is no command line switch to turn this "feature" off.
 .PHONY: $(MAKEFILE_LIST)
 
 # 'make' has a "feature" where it deletes what it determines to be intermediate
-# files.  There is no command line switch to turn this behavior off. Combine
-# this feature with implicit rules to have loads of fun. At least this prevents
-# make from deleting its makefiles if it happens to decide one is an
-# intermediate file.
+# files. There is no command line switch to turn this "feature" off. Combine
+# this "feature" with implicit rules and have loads of fun.
 .PRECIOUS: $(MAKEFILE_LIST)
 
 #$(info makefile: $(MAKEFILE_LIST))
