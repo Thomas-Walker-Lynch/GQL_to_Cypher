@@ -37,8 +37,12 @@ all: $(EXECUTOR_IN_FPL)
 RuleNameListRegx: $(EXECUTOR_IN_DIR)/RuleNameListRegx
 RuleNameList: $(EXECUTOR_IN_DIR)/RuleNameList
 
-GeneratePrintVisitorMethod: $(EXECUTOR_IN_DIR)/GeneratePrintVisitorMethod
-GeneratePrintVisitor: $(EXECUTOR_IN_DIR)/GeneratePrintVisitor GeneratePrintVisitorMethod
+GeneratePrintVisitorMethod:\
+  $(JAVA_COMP_IN_PRIMARY_DIR)/StringUtils.java\
+  $(EXECUTOR_IN_DIR)/GeneratePrintVisitorMethod
+GeneratePrintVisitor:\
+  $(JAVA_COMP_IN_PRIMARY_DIR)/StringUtils.java\
+  $(EXECUTOR_IN_DIR)/GeneratePrintVisitor GeneratePrintVisitorMethod
 
 
 

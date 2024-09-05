@@ -9,13 +9,14 @@ import java.io.PrintWriter;
 public class GeneratePrintVisitor {
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 2) {
-            System.err.println("Usage: java GeneratePrintVisitor <grammarFile> <outputFile>");
+        if (args.length < 2 || args.length > 3) {
+            System.err.println("Usage: java GeneratePrintVisitor <grammarFile> <outputFile> [indentLevel]");
             System.exit(1);
         }
 
         String grammarFile = args[0];
         String outputFile = args[1];
+        int indentLevel = args.length == 3 ? Integer.parseInt(args[2]) : 0;
 
         // Extract the grammar name from the file name
         String grammarName = Paths.get(grammarFile).getFileName().toString().replace(".g4", "");
@@ -33,30 +34,32 @@ public class GeneratePrintVisitor {
 
         // Template for the PrintVisitor class
         String classTemplate = """
-            import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+          import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
-            public class PrintVisitor extends AbstractParseTreeVisitor<String> {
-                private final String[] ruleNames;
+          public class PrintVisitor extends AbstractParseTreeVisitor<String> {
+            private final String[] ruleNames;
 
-                public PrintVisitor(String[] ruleNames) {
-                    this.ruleNames = ruleNames;
-                }
+            public PrintVisitor(String[] ruleNames) {
+              this.ruleNames = ruleNames;
+            }
 
-                // Generated print methods
-            """;
+            // Generated print methods
+          """;
+
+        // Indent the class template
+        String indentedClassTemplate = StringUtils.indentString(classTemplate, indentLevel);
 
         // Generate and output the PrintVisitor class
         try (PrintWriter writer = new PrintWriter(outputFile)) {
             // Write the class template
-            writer.print(classTemplate);
+            writer.print(indentedClassTemplate);
 
-            // Generate and write the print methods
             for (String ruleName : ruleNames) {
-                GeneratePrintVisitorMethod.generatePrintMethod(parserName, ruleName, writer);
+                GeneratePrintVisitorMethod.generatePrintMethod(parserName, ruleName, writer, indentLevel + 1);
             }
 
             // Close the class
-            writer.println("}");
+            writer.println(StringUtils.indentString("}", indentLevel));
         }
     }
 
