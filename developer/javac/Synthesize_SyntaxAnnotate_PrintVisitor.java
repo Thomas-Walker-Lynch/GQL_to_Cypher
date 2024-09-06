@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.io.PrintWriter;
 
@@ -11,52 +12,57 @@ public class Synthesize_SyntaxAnnotate_PrintVisitor {
   // Constant for the usage message
   private static final String USAGE_MESSAGE = 
     "Usage: Synthesize_SyntaxAnnotate_PrintVisitor"
-    +"[-version]"
-    +"<grammarFilePath> <outputFile> [indentLevel]"
+    +" [-version]"
+    +" <g4-grammar-file-path> <outputFile> [indent-level (default 0)]"
     ;
 
   public static void main(String[] args) throws IOException {
-    if (args.length == 0) {
+  if (args.length == 0) {
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
-
-    String grammarFilePath = null;
-    String outputFile = null;
+    boolean error = false;
+    boolean version = false;
     int indentLevel = 0;
-
-    // Parse the arguments
+    List<String> argList = new ArrayList<>();
     for (int i = 0; i < args.length; i++) {
       String arg = args[i];
       if (arg.startsWith("-")) {
         switch (arg) {
         case "-version":
-          System.out.println("Version 0.1");
-          System.exit(0);
+          version = true;
           break;
         default:
           System.err.println("Unrecognized option: " + arg);
-          System.err.println(USAGE_MESSAGE);
-          System.exit(1);
+          error = true;
         }
       } else {
-        if (grammarFilePath == null) {
-          grammarFilePath = arg;
-        } else if (outputFile == null) {
-          outputFile = arg;
-        } else {
-          indentLevel = Integer.parseInt(arg);
-        }
+        argList.add(arg);
       }
     }
-
-    // Ensure there are exactly two or three arguments
-    if (grammarFilePath == null || outputFile == null) {
+    if (version) {
+      System.out.println("Version 0.1");
+      if (error) {
+        System.exit(1);
+      } else {
+        System.exit(0);
+      }
+    }
+    if (argList.size() < 2 || argList.size() > 3) {
+      System.err.println("Expected two or three non-option arguments.");
+      error = true;
+    }
+    if (error) {
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
 
-    // Extract the grammar name from the file name
+    String grammarFilePath = argList.get(0);
+    String outputFile      = argList.get(1);
+    if (argList.size() == 3) {
+      indentLevel = Integer.parseInt(argList.get(2));
+    }
+
     String grammarName = Paths.get(grammarFilePath).getFileName().toString().replace(".g4", "");
     String parserName = grammarName + "Parser";
     String visitorClassName = grammarName + "_SyntaxAnnotate_PrintVisitor";
