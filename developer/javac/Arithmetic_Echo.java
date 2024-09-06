@@ -8,16 +8,49 @@ import org.antlr.v4.runtime.tree.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Arithmetic_Echo {
+  // Constant for the usage message
+  private static final String USAGE_MESSAGE = "Usage: java Arithmetic_Echo <input-file> " +
+    "[-version]";
 
   public static void main(String[] args) throws IOException {
-    if (args.length != 1) {
-      System.err.println("Usage: java Arithmetic_Echo <input-file>");
+    if (args.length == 0) {
+      System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
 
-    String inputFile = args[0];
+    // Defaults
+    List<String> argList = new ArrayList<>();
+
+    // Parse the arguments
+    for (int i = 0; i < args.length; i++) {
+      String arg = args[i];
+      if (arg.startsWith("-")) {
+        switch (arg) {
+        case "-version":
+          System.out.println("Version 0.1");
+          System.exit(0);
+          break;
+        default:
+          System.err.println("Unrecognized option: " + arg);
+          System.err.println(USAGE_MESSAGE);
+          System.exit(1);
+        }
+      } else {
+        argList.add(arg);
+      }
+    }
+
+    // Ensure there is exactly one input file argument
+    if (argList.size() != 1) {
+      System.err.println(USAGE_MESSAGE);
+      System.exit(1);
+    }
+
+    String inputFile = argList.get(0);
     String input = Files.readString(Paths.get(inputFile));
 
     try {

@@ -10,15 +10,44 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PrintRuleNameListRegx {
+public class RuleNameListRegx {
+  // Constant for the usage message
+  private static final String USAGE_MESSAGE = "Usage: java RuleNameListRegx <path-to-g4-file> " +
+    "[-version]";
 
   public static void main(String[] args) {
-    if (args.length != 1) {
-      System.out.println("Usage: PrintRuleNameListRegx <path-to-g4-file>");
-      return;
+    if (args.length == 0) {
+      System.err.println(USAGE_MESSAGE);
+      System.exit(1);
     }
 
-    String filePath = args[0];
+    String filePath = null;
+
+    // Parse the arguments
+    for (int i = 0; i < args.length; i++) {
+      String arg = args[i];
+      if (arg.startsWith("-")) {
+        switch (arg) {
+        case "-version":
+          System.out.println("Version 0.1");
+          System.exit(0);
+          break;
+        default:
+          System.err.println("Unrecognized option: " + arg);
+          System.err.println(USAGE_MESSAGE);
+          System.exit(1);
+        }
+      } else {
+        filePath = arg;
+      }
+    }
+
+    // Ensure there is exactly one file path argument
+    if (filePath == null) {
+      System.err.println(USAGE_MESSAGE);
+      System.exit(1);
+    }
+
     Set<String> ruleNames = new HashSet<>();
 
     try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {

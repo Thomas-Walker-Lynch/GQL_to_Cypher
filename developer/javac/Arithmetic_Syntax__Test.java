@@ -1,3 +1,4 @@
+
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import java.nio.file.Files;
@@ -63,15 +64,41 @@ public class Arithmetic_Syntax__Test {
     return visitor.visit(tree);
   }
 
+  // Constant for the usage message
+  private static final String USAGE_MESSAGE = "Usage: Arithmetic_Syntax__Test [-version]";
+
   public static void main(String[] args) {
+    // if (args.length == 0) {
+    //   System.err.println(USAGE_MESSAGE);
+    //   System.exit(1);
+    // }
+
+    // Parse the arguments
+    for (String arg : args) {
+      if (arg.startsWith("-")) {
+        switch (arg) {
+        case "-version":
+          System.out.println("Version 0.1");
+          System.exit(0);
+          break;
+        default:
+          System.err.println("Unrecognized option: " + arg);
+          System.err.println(USAGE_MESSAGE);
+          System.exit(1);
+        }
+      }
+    }
+
     // Use LinkedHashMap to maintain order of test results
-    Map<String ,Boolean> tests = new LinkedHashMap<>();
-    tests.put("Arithmetic_Syntax_0" ,Arithmetic_Syntax_0());
-    tests.put("Arithmetic_Syntax_1" ,Arithmetic_Syntax_1());
-    tests.put("Arithmetic_Syntax_2" ,Arithmetic_Syntax_2());
-    tests.put("Arithmetic_Syntax_3" ,Arithmetic_Syntax_3());
-    tests.put("Arithmetic_Syntax_4" ,Arithmetic_Syntax_4());
+    Map<String, Boolean> tests = new LinkedHashMap<>();
+    tests.put("Arithmetic_Syntax_0", Arithmetic_Syntax_0());
+    tests.put("Arithmetic_Syntax_1", Arithmetic_Syntax_1());
+    tests.put("Arithmetic_Syntax_2", Arithmetic_Syntax_2());
+    tests.put("Arithmetic_Syntax_3", Arithmetic_Syntax_3());
+    tests.put("Arithmetic_Syntax_4", Arithmetic_Syntax_4());
 
     TestBench.runTests(tests);
   }
+
 }
+

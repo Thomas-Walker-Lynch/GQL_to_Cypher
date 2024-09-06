@@ -5,6 +5,41 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Arithmetic_Echo__Test {
+  // Constant for the usage message
+  private static final String USAGE_MESSAGE = "Usage: Arithmetic_Echo__Test " +
+    "[-version]";
+
+  public static void main(String[] args) {
+    // if (args.length == 0) {
+    //   System.err.println(USAGE_MESSAGE);
+    //   System.exit(1);
+    // }
+
+    // Parse the arguments
+    for (String arg : args) {
+      if (arg.startsWith("-")) {
+        switch (arg) {
+        case "-version":
+          System.out.println("Version 0.1");
+          System.exit(0);
+          break;
+        default:
+          System.err.println("Unrecognized option: " + arg);
+          System.err.println(USAGE_MESSAGE);
+          System.exit(1);
+        }
+      }
+    }
+
+    Map<String, Boolean> tests = new HashMap<>();
+    tests.put("Arithmetic_Echo_0", Arithmetic_Echo_0());
+    tests.put("Arithmetic_Echo_1", Arithmetic_Echo_1());
+    tests.put("Arithmetic_Echo_2", Arithmetic_Echo_2());
+    tests.put("Arithmetic_Echo_3", Arithmetic_Echo_3());
+    tests.put("Arithmetic_Echo_4", Arithmetic_Echo_4());
+
+    TestBench.runTests(tests);
+  }
 
   public static boolean Arithmetic_Echo_0() {
     // Simple smoke test
@@ -60,8 +95,6 @@ public class Arithmetic_Echo__Test {
       String input = "3 + 5 * (10 - 4)";
       String expectedOutput = "(3 + (5 * (10 - 4)))";
       String actualOutput = runSyntax(input);
-      // Uncomment the print statement for debugging
-      // System.out.println("Arithmetic_Echo_4 - Expected: " + expectedOutput + ", Actual: " + actualOutput);
       return expectedOutput.equals(actualOutput);
     } catch (Exception e) {
       return false;
@@ -77,16 +110,5 @@ public class Arithmetic_Echo__Test {
 
     Arithmetic_Echo_PrintVisitor visitor = new Arithmetic_Echo_PrintVisitor(parser.getRuleNames());
     return visitor.visit(tree);
-  }
-
-  public static void main(String[] args) {
-    Map<String, Boolean> tests = new HashMap<>();
-    tests.put("Arithmetic_Echo_0", Arithmetic_Echo_0());
-    tests.put("Arithmetic_Echo_1", Arithmetic_Echo_1());
-    tests.put("Arithmetic_Echo_2", Arithmetic_Echo_2());
-    tests.put("Arithmetic_Echo_3", Arithmetic_Echo_3());
-    tests.put("Arithmetic_Echo_4", Arithmetic_Echo_4());
-
-    TestBench.runTests(tests);
   }
 }
