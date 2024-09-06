@@ -44,16 +44,17 @@ fi
 export EXECUTOR_IN_FL="\
   RuleNameListRegx\
   RuleNameList\
-  GeneratePrintVisitorMethod\
-  GeneratePrintVisitor\
+  Synthesize_SyntaxAnnotate_PrintVisitorMethod\
+  Synthesize_SyntaxAnnotate_PrintVisitor\
+  Synthesize_SyntaxAnnotate\
   ANTLRv4_RuleNameList\
   Arithmetic_Echo\
   Arithmetic_Echo__Test\
-  Arithmetic_Syntax\
-  Arithmetic_Syntax__Test\
-  ANTLRv4_Syntax\
-  GQL_20240412_Syntax\
-  GQL_20240412_Syntax__Test\
+  Arithmetic_SyntaxAnnotate\
+  Arithmetic_SyntaxAnnotate__Test\
+  Arithmetic2_SyntaxAnnotate\
+  Arithmetic2_SyntaxAnnotate__Test\
+  ANTLRv4_SyntaxAnnotate\
   "
 
 # where make will put the programs
@@ -147,3 +148,4 @@ export JAR_OUT_FPL
 
 
 #  LocalWords:  ANTLRv PrintRuleNameListRegx RuleNameListRegx RuleNameList
+#  LocalWords:  PrintVisitorMethod PrintVisitor SyntaxAnnotate

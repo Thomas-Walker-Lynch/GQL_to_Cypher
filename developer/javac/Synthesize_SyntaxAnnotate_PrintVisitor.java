@@ -3,13 +3,17 @@ import org.antlr.v4.runtime.tree.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.io.PrintWriter;
 
-public class Synthesize_PrintVisitor {
+public class Synthesize_SyntaxAnnotate_PrintVisitor {
   // Constant for the usage message
-  private static final String USAGE_MESSAGE = "Usage: java Synthesize_PrintVisitor <grammarFile> <outputFile> [indentLevel] " +
-    "[-version]";
+  private static final String USAGE_MESSAGE = 
+    "Usage: Synthesize_SyntaxAnnotate_PrintVisitor"
+    +"[-version]"
+    +"<grammarFilePath> <outputFile> [indentLevel]"
+    ;
 
   public static void main(String[] args) throws IOException {
     if (args.length == 0) {
@@ -17,7 +21,7 @@ public class Synthesize_PrintVisitor {
       System.exit(1);
     }
 
-    String grammarFile = null;
+    String grammarFilePath = null;
     String outputFile = null;
     int indentLevel = 0;
 
@@ -36,8 +40,8 @@ public class Synthesize_PrintVisitor {
           System.exit(1);
         }
       } else {
-        if (grammarFile == null) {
-          grammarFile = arg;
+        if (grammarFilePath == null) {
+          grammarFilePath = arg;
         } else if (outputFile == null) {
           outputFile = arg;
         } else {
@@ -47,17 +51,18 @@ public class Synthesize_PrintVisitor {
     }
 
     // Ensure there are exactly two or three arguments
-    if (grammarFile == null || outputFile == null) {
+    if (grammarFilePath == null || outputFile == null) {
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
 
     // Extract the grammar name from the file name
-    String grammarName = Paths.get(grammarFile).getFileName().toString().replace(".g4", "");
+    String grammarName = Paths.get(grammarFilePath).getFileName().toString().replace(".g4", "");
     String parserName = grammarName + "Parser";
+    String visitorClassName = grammarName + "_SyntaxAnnotate_PrintVisitor";
 
     // Parse the .g4 file
-    CharStream input = CharStreams.fromFileName(grammarFile);
+    CharStream input = CharStreams.fromFileName(grammarFilePath);
     ANTLRv4Lexer lexer = new ANTLRv4Lexer(input);
     CommonTokenStream tokens = new CommonTokenStream(lexer);
     ANTLRv4Parser parser = new ANTLRv4Parser(tokens);
@@ -66,39 +71,41 @@ public class Synthesize_PrintVisitor {
     ParseTree tree = parser.grammarSpec();
     List<String> ruleNames = extractRuleNames(parser);
 
+    // Synthesize the print methods
+    StringBuilder printMethods = new StringBuilder();
+    for (String ruleName : ruleNames) {
+      printMethods.append(Synthesize_SyntaxAnnotate_PrintVisitorMethod.synthesizePrintMethod(parserName, ruleName, indentLevel + 1));
+    }
+
     // Template for the PrintVisitor class
     String classTemplate = """
+      /* This file synthesized by Synthesize_SyntaxAnnotate_PrintVisitor.
+      */
       import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
-      public class PrintVisitor extends AbstractParseTreeVisitor<String> {
+      public class ____0_ extends AbstractParseTreeVisitor<String> {
         private final String[] ruleNames;
 
-        public PrintVisitor(String[] ruleNames) {
+        public ____0_(String[] ruleNames) {
           this.ruleNames = ruleNames;
         }
 
-        // Generated print methods
+        ____1_
+      }
       """;
 
-    // Indent the class template
-    String indentedClassTemplate = StringUtils.indentString(classTemplate, indentLevel);
+    classTemplate = classTemplate.replace("____0_", visitorClassName);
+    classTemplate = classTemplate.replace("____1_", printMethods.toString());
 
-    // Generate and output the PrintVisitor class
     try (PrintWriter writer = new PrintWriter(outputFile)) {
-      // Write the class template
-      writer.print(indentedClassTemplate);
-
-      for (String ruleName : ruleNames) {
-        Synthesize_PrintVisitorMethod.generatePrintMethod(parserName, ruleName, writer, indentLevel + 1);
-      }
-
-      // Close the class
-      writer.println(StringUtils.indentString("}", indentLevel));
+      writer.print(classTemplate);
     }
   }
 
   private static List<String> extractRuleNames(Parser parser) {
     // Extract rule names from the parser
-    return List.of(parser.getRuleNames());
+    return Arrays.asList(parser.getRuleNames());
   }
 }
+
+//  LocalWords:  SyntaxAnnotate PrintVisitor

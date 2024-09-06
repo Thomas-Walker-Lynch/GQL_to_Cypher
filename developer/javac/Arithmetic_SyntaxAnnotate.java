@@ -12,55 +12,56 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Arithmetic_Syntax {
+public class Arithmetic_SyntaxAnnotate {
   // Constant for the usage message
-  private static final String USAGE_MESSAGE = "Usage: Arithmetic_Syntax [-pp] <source-file> " +
-    "[-version]";
+  private static final String USAGE_MESSAGE = 
+    "Usage: Arithmetic_SyntaxAnnotate [-version] [-pp] <source-file>";
 
   public static void main(String[] args) throws IOException {
     if (args.length == 0) {
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
-
+    boolean error = false;
+    boolean version = false;
     boolean pretty_print = false;
-    List<String> file_arg_list = new ArrayList<>();
-    boolean has_error = false;
-
-    // Parse the options and arguments
+    List<String> argList = new ArrayList<>();
     for (int i = 0; i < args.length; i++) {
       String arg = args[i];
       if (arg.startsWith("-")) {
         switch (arg) {
+        case "-version":
+          version = true;
+          break;
         case "-pp":
           pretty_print = true;
           break;
-        case "-version":
-          System.out.println("Version 0.1");
-          System.exit(0);
-          break;
         default:
           System.err.println("Unrecognized option: " + arg);
-          has_error = true;
+          error = true;
         }
       } else {
-        file_arg_list.add(arg);
+        argList.add(arg);
       }
     }
-
-    // If there were any errors, print usage and exit
-    if (has_error) {
+    if(version){
+      System.out.println("version 0.1");
+      if(error){
+        System.exit(1);
+      }else{
+        System.exit(0);
+      }
+    }
+    if (argList.size() != 1) {
+      System.err.println("Expected exactly one non-option argument.");
+      error = true;
+    }
+    if(error){
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
 
-    // Ensure there is exactly one input file
-    if (file_arg_list.size() != 1) {
-      System.err.println(USAGE_MESSAGE);
-      System.exit(1);
-    }
-
-    String input_file = file_arg_list.get(0);
+    String input_file = argList.get(0);
     String input = Files.readString(Paths.get(input_file));
 
     try {
@@ -69,7 +70,8 @@ public class Arithmetic_Syntax {
       ArithmeticParser parser = new ArithmeticParser(tokens);
       ParseTree tree = parser.program();
 
-      Arithmetic_Syntax_PrintVisitor visitor = new Arithmetic_Syntax_PrintVisitor(parser.getRuleNames(), pretty_print);
+      Arithmetic_SyntaxAnnotate_PrintVisitor visitor = 
+        new Arithmetic_SyntaxAnnotate_PrintVisitor(parser.getRuleNames(), pretty_print);
       String output = visitor.visit(tree);
       System.out.println(output);
     } catch (Exception e) {

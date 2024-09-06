@@ -13,39 +13,45 @@ import java.util.List;
 
 public class Arithmetic_Echo {
   // Constant for the usage message
-  private static final String USAGE_MESSAGE = "Usage: java Arithmetic_Echo <input-file> " +
-    "[-version]";
+  private static final String USAGE_MESSAGE =
+    "Usage: Arithmetic_Echo [-version] <source-file-path>";
 
   public static void main(String[] args) throws IOException {
     if (args.length == 0) {
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
-
-    // Defaults
+    boolean error = false;
+    boolean version = false;
     List<String> argList = new ArrayList<>();
-
-    // Parse the arguments
     for (int i = 0; i < args.length; i++) {
       String arg = args[i];
       if (arg.startsWith("-")) {
         switch (arg) {
         case "-version":
-          System.out.println("Version 0.1");
-          System.exit(0);
+          version = true;
           break;
         default:
           System.err.println("Unrecognized option: " + arg);
-          System.err.println(USAGE_MESSAGE);
-          System.exit(1);
+          error = true;
         }
       } else {
         argList.add(arg);
       }
     }
-
-    // Ensure there is exactly one input file argument
+    if(version){
+      System.out.println("version 0.1");
+      if(error){
+        System.exit(1);
+      }else{
+        System.exit(0);
+      }        
+    }
     if (argList.size() != 1) {
+      System.err.println("Expected exactly one non-option argument.");
+      error = true;
+    }
+    if(error){
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }

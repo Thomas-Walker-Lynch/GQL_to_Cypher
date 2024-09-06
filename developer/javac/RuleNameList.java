@@ -19,55 +19,71 @@ import java.util.List;
 public class RuleNameList {
 
   // Constant for the usage message
-  private static final String USAGE_MESSAGE = "Usage: java RuleNameList <grammar_name> " +
-          "[-rule (default)] [-no-rule] " +
-          "[-token] [-no-token (default)]";
+  private static final String USAGE_MESSAGE =
+    "Usage: RuleNameList"
+    +" [-version]"
+    +" [-rule (default)] [-no-rule]"
+    +" [-token] [-no-token (default)]"
+    +" <grammar-name>"
+    ;
 
   public static void main(String[] args) {
     if (args.length == 0) {
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
-
-    // Defaults
+    boolean error = false;
+    boolean version = false;
     boolean printRules = true;
     boolean printTokens = false;
     List<String> argList = new ArrayList<>();
-
-    // Parse the arguments
     for (int i = 0; i < args.length; i++) {
       String arg = args[i];
       if (arg.startsWith("-")) {
         switch (arg) {
-          case "-rule":
-            printRules = true;
-            break;
-          case "-no-rule":
-            printRules = false;
-            break;
-          case "-token":
-            printTokens = true;
-            break;
-          case "-no-token":
-            printTokens = false;
-            break;
-          default:
-            System.err.println("Unrecognized option: " + arg);
-            System.err.println(USAGE_MESSAGE);
-            System.exit(1);
+        case "-version":
+          version = true;
+          break;
+        case "-rule":
+          printRules = true;
+          break;
+        case "-no-rule":
+          printRules = false;
+          break;
+        case "-token":
+          printTokens = true;
+          break;
+        case "-no-token":
+          printTokens = false;
+          break;
+        default:
+          System.err.println("Unrecognized option: " + arg);
+          error = true;
         }
       } else {
         argList.add(arg);
       }
     }
-
-    // Ensure there is exactly one grammar name argument
+    if(version){
+      System.out.println("version 0.1");
+      if(error){
+        System.exit(1);
+      }else{
+        System.exit(0);
+      }        
+    }
     if (argList.size() != 1) {
+      System.err.println("Expected exactly one non-option argument.");
+      error = true;
+    }
+    if(error){
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
 
     String grammarName = argList.get(0);
+    // in case the user provided a path instead of a name:
+    grammarName = Paths.get(grammarName).getFileName().toString().replace(".g4", "");
 
     try {
       // Dynamically load the appropriate lexer and parser

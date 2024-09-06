@@ -17,31 +17,33 @@ import java.util.List;
 
 public class ANTLR_OUT_FL {
 
-  // Constant for the usage message
-  private static final String USAGE_MESSAGE = "Usage: java ANTLR_OUT_FL <grammar-file> " +
-    "[-visitor (default)] [-no-visitor] " +
-    "[-listener] [-no-listener (default)] " +
-    "[-tokens] [-no-tokens (default)] " +
-    "[-path <path>]";
+  private static final String USAGE_MESSAGE = 
+    "Usage: ANTLR_OUT_FL <grammar-name> "
+    +" [-visitor (default)] [-no-visitor] "
+    +" [-listener] [-no-listener (default)] "
+    +" [-tokens] [-no-tokens (default)] "
+    +" [-path <path>]"
+    ;
 
   public static void main(String[] args) {
     if (args.length == 0) {
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
-
-    // Defaults
+    boolean error = false;
+    boolean version = false;
     boolean visitor = true;
     boolean noListener = true;
     boolean noTokens = true;
-    String outputPath = "";  // Default empty path
+    String outputPath = "";
     List<String> argList = new ArrayList<>();
-
-    // Parse the arguments
     for (int i = 0; i < args.length; i++) {
       String arg = args[i];
       if (arg.startsWith("-")) {
         switch (arg) {
+        case "-version":
+          version = true;
+          break;
         case "-visitor":
           visitor = true;
           break;
@@ -68,29 +70,38 @@ public class ANTLR_OUT_FL {
               outputPath += "/";  // Ensure the path ends with a slash
             }
           } else {
-            System.err.println(USAGE_MESSAGE);
-            System.exit(1);
+            System.err.println("expected argument after option: " + args[i]);
+            error = true;
           }
           break;
         default:
           System.err.println("Unrecognized option: " + arg);
-          System.err.println(USAGE_MESSAGE);
-          System.exit(1);
+          error = true;
         }
       } else {
         argList.add(arg);
       }
     }
-
-    // Ensure there is exactly one grammar file argument
+    if(version){
+      System.out.println("version 0.1");
+      if(error){
+        System.exit(1);
+      }else{
+        System.exit(0);
+      }        
+    }
     if (argList.size() != 1) {
+      System.err.println("Expected exactly one non-option argument.");
+      error = true;
+    }
+    if(error){
       System.err.println(USAGE_MESSAGE);
       System.exit(1);
     }
 
-    String grammarFile = argList.get(0);
+    String grammarName = argList.get(0);
 
-    List<String> generatedFiles = generateFileList(grammarFile, visitor, noListener, noTokens, outputPath);
+    List<String> generatedFiles = generateFileList(grammarName, visitor, noListener, noTokens, outputPath);
 
     // Print the files in a space-separated format on a single line
     if (!generatedFiles.isEmpty()) {
@@ -102,8 +113,8 @@ public class ANTLR_OUT_FL {
     System.out.println(); // Print a newline at the end
   }
 
-  public static List<String> generateFileList(String grammarFile, boolean visitor, boolean noListener, boolean noTokens, String outputPath) {
-    String baseName = new File(grammarFile).getName().replace(".g4", "");
+  public static List<String> generateFileList(String grammarName, boolean visitor, boolean noListener, boolean noTokens, String outputPath) {
+    String baseName = new File(grammarName).getName().replace(".g4", "");
     List<String> fileList = new ArrayList<>();
 
     // Determine if this is a lexer, parser, or both

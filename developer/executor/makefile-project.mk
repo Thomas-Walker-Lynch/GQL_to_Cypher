@@ -37,14 +37,17 @@ all: $(EXECUTOR_IN_FPL)
 RuleNameListRegx: $(EXECUTOR_IN_DIR)/RuleNameListRegx
 RuleNameList: $(EXECUTOR_IN_DIR)/RuleNameList
 
-GeneratePrintVisitorMethod:\
+Synthesize_SyntaxAnnotate_PrintVisitorMethod:\
   $(JAVA_COMP_IN_PRIMARY_DIR)/StringUtils.java\
-  $(EXECUTOR_IN_DIR)/GeneratePrintVisitorMethod
-GeneratePrintVisitor:\
+  $(EXECUTOR_IN_DIR)/Synthesize_SyntaxAnnotate_PrintVisitorMethod
+Synthesize_SyntaxAnnotate_PrintVisitor:\
   $(JAVA_COMP_IN_PRIMARY_DIR)/StringUtils.java\
-  $(EXECUTOR_IN_DIR)/GeneratePrintVisitor GeneratePrintVisitorMethod
+  $(JAVA_COMP_IN_PRIMARY_DIR)/Synthesize_SyntaxAnnotate_PrintVisitorMethod.java\
+  $(EXECUTOR_IN_DIR)/Synthesize_SyntaxAnnotate_PrintVisitor
 
-
+Synthesize_SyntaxAnnotate:\
+  $(JAVA_COMP_IN_PRIMARY_DIR)/StringUtils.java\
+  $(EXECUTOR_IN_DIR)/Synthesize_SyntaxAnnotate
 
 #-----------------------------------------------
 # Arithmetic
@@ -69,61 +72,83 @@ Arithmetic_Echo__Test:\
 	fi
 	$(REMAKE) $(EXECUTOR_IN_DIR)/Arithmetic_Echo__Test
 
-Arithmetic_Syntax:\
+Arithmetic_SyntaxAnnotate:\
   $(ANTLR_OUT_Arithmetic_FPL)\
-  $(JAVA_COMP_IN_PRIMARY_DIR)/Arithmetic_Syntax_PrintVisitor.java
+  $(JAVA_COMP_IN_PRIMARY_DIR)/Arithmetic_SyntaxAnnotate_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_Arithmetic_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_Arithmetic_FPL empty."; \
 	  exit 1; \
 	fi
-	$(REMAKE) $(EXECUTOR_IN_DIR)/Arithmetic_Syntax
+	$(REMAKE) $(EXECUTOR_IN_DIR)/Arithmetic_SyntaxAnnotate
 
-Arithmetic_Syntax__Test:\
+Arithmetic_SyntaxAnnotate__Test:\
   $(ANTLR_OUT_Arithmetic_FPL)\
-  $(JAVA_COMP_IN_PRIMARY_DIR)/Arithmetic_Syntax_PrintVisitor.java
+  $(JAVA_COMP_IN_PRIMARY_DIR)/Arithmetic_SyntaxAnnotate_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_Arithmetic_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_Arithmetic_FPL empty."; \
 	  exit 1; \
 	fi
-	$(REMAKE) $(EXECUTOR_IN_DIR)/Arithmetic_Syntax__Test
+	$(REMAKE) $(EXECUTOR_IN_DIR)/Arithmetic_SyntaxAnnotate__Test
 
+#-----------------------------------------------
+# Arithmetic2
+# 
+
+ANTLR_OUT_Arithmetic2_FPL:= $(shell ANTLR_OUT_FL Arithmetic2 -path $(ANTLR_OUT_DIR))
+Arithmetic2_SyntaxAnnotate:\
+  $(ANTLR_OUT_Arithmetic2_FPL)\
+  $(JAVA_COMP_IN_PRIMARY_DIR)/Arithmetic2_SyntaxAnnotate_PrintVisitor.java
+	@if [ -z "$(ANTLR_OUT_Arithmetic2_FPL)" ]; then \
+	  echo "variable ANTLR_OUT_Arithmetic2_FPL empty."; \
+	  exit 1; \
+	fi
+	$(REMAKE) $(EXECUTOR_IN_DIR)/Arithmetic2_SyntaxAnnotate
+
+Arithmetic2_SyntaxAnnotate__Test:\
+  $(ANTLR_OUT_Arithmetic2_FPL)\
+  $(JAVA_COMP_IN_PRIMARY_DIR)/Arithmetic2_SyntaxAnnotate_PrintVisitor.java
+	@if [ -z "$(ANTLR_OUT_Arithmetic2_FPL)" ]; then \
+	  echo "variable ANTLR_OUT_Arithmetic2_FPL empty."; \
+	  exit 1; \
+	fi
+	$(REMAKE) $(EXECUTOR_IN_DIR)/Arithmetic2_SyntaxAnnotate__Test
 
 #-----------------------------------------------
 # Parsing/Analyzing ANTLR grammars
 #
 
 ANTLR_OUT_ANTLRv4_FPL:= $(shell ANTLR_OUT_FL ANTLRv4 -path $(ANTLR_OUT_DIR))
-ANTLRv4_Syntax:\
+ANTLRv4_SyntaxAnnotate:\
   $(ANTLR_OUT_ANTLRv4_FPL)\
-  $(JAVA_COMP_IN_PRIMARY_DIR)/ANTLRv4_Syntax_PrintVisitor.java
+  $(JAVA_COMP_IN_PRIMARY_DIR)/ANTLRv4_SyntaxAnnotate_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_ANTLRv4_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_ANTLRv4_FPL empty."; \
 	  exit 1; \
 	fi
-	$(REMAKE) $(EXECUTOR_IN_DIR)/ANTLRv4_Syntax
+	$(REMAKE) $(EXECUTOR_IN_DIR)/ANTLRv4_SyntaxAnnotate
 
 
 #-----------------------------------------------
 #  GQL_20240412
 
 ANTLR_OUT_GQL_20240412_FPL := $(shell ANTLR_OUT_FL GQL_20240412 -path $(ANTLR_OUT_DIR))
-GQL_20240412_Syntax:\
+GQL_20240412_SyntaxAnnotate:\
   $(ANTLR_OUT_GQL_20240412_FPL)\
-  $(JAVA_COMP_IN_PRIMARY_DIR)/GQL_20240412_Syntax_PrintVisitor.java
+  $(JAVA_COMP_IN_PRIMARY_DIR)/GQL_20240412_SyntaxAnnotate_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_GQL_20240412_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_GQL_20240412_FPL empty."; \
 	  exit 1; \
 	fi
-	$(REMAKE) $(EXECUTOR_IN_DIR)/GQL_20240412_Syntax
+	$(REMAKE) $(EXECUTOR_IN_DIR)/GQL_20240412_SyntaxAnnotate
 
-GQL_20240412_Syntax__Test: \
+GQL_20240412_SyntaxAnnotate__Test: \
   $(ANTLR_OUT_GQL_20240412_FPL) \
-  $(JAVA_COMP_IN_PRIMARY_DIR)/GQL_20240412_Syntax_PrintVisitor.java
+  $(JAVA_COMP_IN_PRIMARY_DIR)/GQL_20240412_SyntaxAnnotate_PrintVisitor.java
 	@if [ -z "$(ANTLR_OUT_GQL_20240412_FPL)" ]; then \
 	  echo "variable ANTLR_OUT_GQL_20240412_FPL empty."; \
 	  exit 1; \
 	fi
-	$(REMAKE) $(EXECUTOR_IN_DIR)/GQL_20240412_Syntax__Test
+	$(REMAKE) $(EXECUTOR_IN_DIR)/GQL_20240412_SyntaxAnnotate__Test
 
 
 TerminalToCategory: 
@@ -207,8 +232,8 @@ $(JAVA_COMP_OUT_DIR)/%.jar: $(JAVA_COMP_OUT_DIR)/%.class
 
 #--------------------
 $(EXECUTOR_IN_DIR)/%: $(JVM_IN_DIR)/%.jar
-	@echo "Creating script for $*..."
+	@echo "Creating program for $*..."
 	@echo "#!/usr/bin/env bash" > $(EXECUTOR_IN_DIR)/$*
 	@echo "$(JAVA_INTERP) -cp ${CLASSPATH}:${JVM_IN_DP}:$(JVM_IN_DP)/$*.jar $*" \$$\@ >> $(EXECUTOR_IN_DIR)/$*
 	chmod +x $(EXECUTOR_IN_DIR)/$*
-	@echo "Created script $(EXECUTOR_IN_DIR)/$*"
+	@echo "Created program $(EXECUTOR_IN_DIR)/$*"

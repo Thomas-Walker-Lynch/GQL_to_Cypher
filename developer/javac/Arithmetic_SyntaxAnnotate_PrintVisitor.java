@@ -1,10 +1,10 @@
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
-public class Arithmetic_Syntax_PrintVisitor extends ArithmeticBaseVisitor<String>{
+public class Arithmetic_SyntaxAnnotate_PrintVisitor extends ArithmeticBaseVisitor<String>{
   private final String[] rule_names;
   private final boolean pretty_print;
 
-  public Arithmetic_Syntax_PrintVisitor(String[] rule_names, boolean pretty_print){
+  public Arithmetic_SyntaxAnnotate_PrintVisitor(String[] rule_names, boolean pretty_print){
     this.rule_names = rule_names;
     this.pretty_print = pretty_print;
   }
