@@ -55,6 +55,7 @@ export EXECUTOR_IN_FL="\
   Arithmetic2_SyntaxAnnotate\
   Arithmetic2_SyntaxAnnotate__Test\
   ANTLRv4_SyntaxAnnotate\
+  Arithmetic_Swap\
   "
 
 # where make will put the programs
@@ -73,8 +74,10 @@ export ANTLR_OUT_DIR="javac/ANTLR"
 export ANTLR_OUT_DIR_PARENT="javac"
 
 # JAVA directories
-export JAVA_COMP_IN_PRIMARY_DIR="javac"
+export JAVA_COMP_IN_DIR="javac"
+export JAVA_COMP_IN_PRIMARY_DIR="javac/primary"
 export JAVA_COMP_IN_ANTLR_DIR="${ANTLR_OUT_DIR}"
+export JAVA_COMP_IN_SYN_DIR="javac/synthesized"
 export JAVA_COMP_IN_DL="${JAVA_COMP_IN_PRIMARY_DIR}:${JAVA_COMP_IN_ANTLR_DIR}"
 export JAVA_COMP_OUT_DIR="jvm"
 

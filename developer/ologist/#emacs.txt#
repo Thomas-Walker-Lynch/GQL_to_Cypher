@@ -22,3 +22,9 @@ Run M-x package-install RET auto-indent-mode RET.
 
 (require 'auto-indent-mode)
 (auto-indent-global-mode)
+
+
+(defun my-groovy-mode-hook ()
+  (setq groovy-indent-offset 2))  ;; Set indentation level to 2 spaces
+
+(add-hook 'groovy-mode-hook 'my-groovy-mode-hook)

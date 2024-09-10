@@ -100,6 +100,60 @@ coordinating with other team members who want hidden files. Hence, a general
 solution that solves all these issues is to alias `ls` to `ls -a`, which is done
 in the environment initialization file for the project.
 
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+Each project has a virtual environment.  So, for the GQL project, gradle is
+installed under .../GQL_to_Cypher/tools.  `gradle` is found under
+`..GQL_to_Cypher/tool/gradle-8.10-rc-1/bin/` and the `env_dev` script sets the
+paths to make it accessible (analogous to Python virtual environment
+`activate`).
+
+`.git` is under the `.../GQL_to_Cypher` directory, so the 'project' directory is
+`.../GQL_to_Cypher`.
+
+All development is done under `.../GQL_to_Cypher/developer` directory.  There
+are no files under that directory, instead all files go into subdirectories.
+The current (being replaced) makefile is under
+`.../GQL_to_Cypher/devloper/executor` There is a bash script that is found first
+in the path that wraps the call to `make` and provides customizing options.
+
+Where does the `settings.gradle` file go?  Where does the `build.gradle` file
+go?  Perhaps `gradle` will also need a script that provides options to wrap the
+`gradle` call?
+
+-->
+
+GQL_to_Cypher/
+├── settings.gradle
+├── build.gradle
+├── developer/
+│   ├── executor/
+│   │   ├── build.gradle
+│   │   └── other-subdirectories/
+│   └── other-subdirectories/
+├── tools/
+│   └── gradle-8.10-rc-1/
+│       └── bin/
+└── other-directories/
+
+
+--->
+
+gradle-wrapper.sh
+
+#!/usr/bin/env bash
+
+# Source the environment setup script
+source .../GQL_to_Cypher/tools/env_dev  # this should probably be env_build
+
+# Call gradle with any additional options
+.../GQL_to_Cypher/tools/gradle-8.10-rc-1/bin/gradle "$@"
+
+./gradle-wrapper.sh build
+
+
 
 <!--  LocalWords:  lector
  -->

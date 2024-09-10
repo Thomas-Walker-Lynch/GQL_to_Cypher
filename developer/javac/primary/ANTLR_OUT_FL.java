@@ -84,11 +84,7 @@ public class ANTLR_OUT_FL {
     }
     if(version){
       System.out.println("version 0.1");
-      if(error){
-        System.exit(1);
-      }else{
-        System.exit(0);
-      }        
+      System.exit(error ? 1 : 0);
     }
     if (argList.size() != 1) {
       System.err.println("Expected exactly one non-option argument.");

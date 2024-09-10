@@ -14,3 +14,11 @@ fi
 ln -sfn "$REPO_HOME/tool/executor" "$REPO_HOME/tool/bin"
 
 echo "All installations complete. Java and ANTLR have been installed successfully."
+
+# https://gradle.org/install/
+# export PATH=$PATH:../gradle-8.10/bin
+#
+# gradle download: https://services.gradle.org/distributions/ -> tool/upstream
+# cd tool
+# unzip -d . upstream/gradle-8.10-rc-1-all.zip 
+# export PATH=$PATH:../gradle-8.10/bin -> env_dev
