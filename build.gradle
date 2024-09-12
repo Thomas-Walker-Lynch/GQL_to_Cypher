@@ -1,0 +1,145 @@
+
+defaultTasks 'installTools'
+
+/*--------------------------------------------------------------------------------
+
+ Configuration variables
+
+*/
+
+// project structure
+def repoHome    = rootDir
+def toolDir     = "${repoHome}/tool"
+def upstreamDir = "${toolDir}/upstream"
+def executorDir = "${toolDir}/executor"
+def erebusDir   = file("${rootDir}/Erebus")
+
+// tool versions
+def antlrVersion = '4.11.1'
+def jdkVersion   = '22.0.1'
+def jdkBuild     = '8'
+
+// The urls for upstream files
+def antlrUrl = "https://www.antlr.org/download/antlr-${antlrVersion}-complete.jar"
+def jdkUrl = "https://github.com/adoptium/temurin22-binaries/releases/download/jdk-${jdkVersion}%2B${jdkBuild}/OpenJDK22U-jdk_x64_linux_hotspot_${jdkVersion}_${jdkBuild}.tar.gz"
+
+task installAntlr {
+  doLast {
+    def antlrJar = file("${upstreamDir}/antlr-${antlrVersion}-complete.jar")
+    def antlrExecutorJar = file("${executorDir}/antlr-${antlrVersion}-complete.jar")
+
+    mkdir(upstreamDir)
+    mkdir(executorDir)
+
+    if (!antlrJar.exists()) {
+      println "Downloading ANTLR..."
+      new URL(antlrUrl).withInputStream { i -> antlrJar.withOutputStream { it << i } }
+    }
+
+    if (!antlrExecutorJar.exists()) {
+      copy {
+        from antlrJar
+        into executorDir
+      }
+      println "ANTLR installed in executor."
+    } else {
+      println "ANTLR already installed."
+    }
+  }
+}
+
+task installJava {
+  doLast {
+    def jdkTar = file("${upstreamDir}/jdk-${jdkVersion}.tar.gz")
+    def jdkDir = file("${toolDir}/jdk-${jdkVersion}+${jdkBuild}")
+    
+    mkdir(upstreamDir)
+    mkdir(toolDir)
+
+    if (!jdkTar.exists()) {
+      println "Downloading JDK..."
+      new URL(jdkUrl).withInputStream { i -> jdkTar.withOutputStream { it << i } }
+    }
+
+    if (!jdkDir.exists()) {
+      println "Extracting JDK..."
+      copy {
+        from tarTree(resources.gzip(jdkTar))
+        into toolDir
+      }
+      println "JDK installed."
+    } else {
+      println "JDK already installed."
+    }
+
+    // Set JAVA_HOME and test Java installation
+    def javaHome = file("${jdkDir}")
+    if (!javaHome.exists()) {
+      throw new GradleException("JDK extraction failed.")
+    }
+    
+    // variables saved for use in subproject build scripts
+    project.ext.javaHome = jdkDir
+
+    println "Java installation complete."
+  }
+}
+
+// Add a task to install both tools
+task installTools {
+  dependsOn installAntlr, installJava
+}
+
+// Ensure all subprojects depend on the tool installation
+subprojects {
+  afterEvaluate { project ->
+    project.tasks.each { task ->
+      task.dependsOn ':installTools'
+    }
+  }
+}
+
+task cleanTool {
+  description = 'Cleans the installed tools (but not upstream files)'
+  doLast {
+    // Define the directories or files to clean
+    def toolDirs = [
+      file("${rootDir}/tool/bin"),
+      file("${rootDir}/tool/executor"),
+      file("${rootDir}/tool/jdk-22.0.1+8")
+    ]
+
+    // Delete the tool directories
+    toolDirs.each { dir ->
+      if (dir.exists()) {
+        println "Deleting ${dir}..."
+        delete dir
+      }
+    }
+
+    println " ./tool cleaned."
+  }
+}
+
+task cleanErebus {
+  description = "Cleans the project level temporary directory 'Erebus'"  
+  
+  doLast {
+    if (erebusDir.exists()) {
+      erebusDir.eachFile { file ->
+        if (file.name != '.gitignore') {
+          if (file.isDirectory()) {
+            file.deleteDir()
+          } else {
+            file.delete()
+          }
+        }
+      }
+      println "Erebus directory cleaned, except for .gitignore."
+    } else {
+      println "Erebus directory does not exist."
+    }
+  }
+}
+
+

@@ -13,12 +13,22 @@ C-c C-g t to run gradle test
 C-c C-g s to run a single test
 C-c C-g d to run a Gradle command with the daemon
 
-Run M-x package-install RET groovy-mode RET.
+(package-install groovy-mode)
 (require 'groovy-mode)
 (add-to-list 'auto-mode-alist '("\\.gradle\\'" . groovy-mode))
 
-(electric-indent-mode 1)
-Run M-x package-install RET auto-indent-mode RET.
 
+;; buffer must be reloaded for it to work
+(package-install 'auto-indent-mode)
 (require 'auto-indent-mode)
-(auto-indent-global-mode)
+
+(add-hook 'groovy-mode-hook 'auto-indent-mode)
+(add-hook 'groovy-mode-hook
+  (lambda ()
+    (setq tab-width 2)
+    (setq groovy-indent-offset 2)
+    (auto-indent-mode t))) ;; Enable auto-indent-mode
+
+(electric-indent-mode 1)
+(auto-indent-global-mode nil)
+

@@ -28,4 +28,22 @@ a pretty good job of that already.)
   categories were created manually. I wonder if categories are necessary, but
   they can't hurt, and as they are done I will keep them.
   
+2024-09-11
+
+  I have tried, have a working example of, a synthesis approach, where one
+  program synthesizes another program that does the syntax annotation. 
+
+  Also worked on reducing the GQL grammar by abstracting it. For example
+  creating one token that stands for all terminal symbols. Though not sure what
+  the advantage is of working with the abstracted grammar instead of the
+  original, as we will have to make a distinction among the various rules that
+  collapsed together before generating the output.
+
+  Now trying to apply rewrite rules to transform tree T0 to tree T1.
+
+  Make does not chain pattern rules, which is causing problems. Everyone in
+  Javaland apparently is using Maven or Gradle, so switching over to Gradle.
   
+
+<!--  LocalWords:  Javaland Gradle
+ -->

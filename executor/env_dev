@@ -13,20 +13,13 @@ if [ -z "$REPO_HOME" ]; then
 fi
 
 export DEVELOPER_HOME="$REPO_HOME/developer"
-
-export JAVA_HOME="$REPO_HOME/tool/jdk-22.0.1+8"
 export GRADLE_HOME="$REPO_HOME/tool/gradle-8.10-rc-1"
-export ANTLR_JAR="$REPO_HOME/tool/executor/antlr-4.11.1-complete.jar"
 
 export PATH=\
 "$DEVELOPER_HOME"/executor\
 :"$REPO_HOME"/tool/executor\
-:"$JAVA_HOME"/bin\
 :"$GRADLE_HOME"/bin\
 :"$PATH"
-
-export GRADLE_OPTS="--settings-file $REPO_HOME/settings.gradle"
-
 
 cd "$DEVELOPER_HOME"
 
