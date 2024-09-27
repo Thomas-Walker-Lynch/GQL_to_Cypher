@@ -36,6 +36,7 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   echo "This script must be sourced, not executed. Exiting."
   return 1
 fi
+export ENV_BUILD_VERSION="0.2"
 
 #--------------------------------------------------------------------------------
 # programs to be built by make project-all (or more simply `make`)
@@ -104,7 +105,7 @@ export CLASSPATH="${CLASSPATH}:$ANTLR_JAR"
 #--------------------------------------------------------------------------------
 # misc
 #
-export TEMP_DIR="$DEVELOPER_HOME"/temporary
+export TEMP_DIR="$DEVELOPER_HOME"/Erebus
 
 #--------------------------------------------------------------------------------
 # ANTLR files

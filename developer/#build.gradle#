@@ -612,6 +612,85 @@ def run_build_scripts(root_node_labels ,boolean verbose = false){
   }
 }
 
+--------------------
+
+def should_build(node, verbose = false){
+  if( node.mark && ('malformed' in node.mark || 'cycle_member' in node.mark) ){
+    if( verbose ) println "Skipping build for ${node.label} due to errors or cycle membership."
+    return false
+  }
+
+  def nodeFile = new File(node.label)
+  if( !nodeFile.exists() ){
+    if( verbose ) println "Node file ${node.label} does not exist."
+    return false
+  }
+
+  def nodeLastModified = nodeFile.lastModified()
+  def shouldBuild = false
+
+  node.neighbor.each{ neighbor_label ->
+    def neighborNode = lookup(neighbor_label, verbose)
+    if( !neighborNode || neighborNode.type != 'path' ){
+      if( verbose ) println "Dependency ${neighbor_label} is missing or not a path type."
+      return false
+    }
+
+    def neighborFile = new File(neighbor_label)
+    if( !neighborFile.exists() ){
+      if( verbose ) println "Dependency file ${neighbor_label} does not exist."
+      return false
+    }
+
+    def neighborLastModified = neighborFile.lastModified()
+    if( neighborLastModified > nodeLastModified ){
+      shouldBuild = true
+    }
+  }
+
+  return shouldBuild
+}
+
+def run_build_scripts(root_node_labels ,boolean verbose = false){
+  if( root_node_labels.isEmpty() ) return
+
+  def visited = [] as Set
+  def build_order = []
+  def stack = []
+
+  root_node_labels.each{ root_label ->
+    stack << root_label
+  }
+
+  do{
+    def node_label = stack.pop()
+    def node = lookup(node_label ,verbose)
+    if( !node ) continue
+
+    if( node.label in visited ) continue
+    visited << node.label
+
+    node.neighbor.each{ neighbor_label ->
+      stack << neighbor_label
+    }
+
+    build_order << node
+  }while( !stack.isEmpty() )
+
+  build_order.reverse().each{ node ->
+    if( node.build && should_build(node ,verbose) ){
+      println "Running build script for ${node.label}"
+      node.build(node ,node.neighbor)
+    }
+  }
+}
+
+// Example usage
+def root_node_labels = ["ANTLR_OUT_FL" ,"RuleNameList"]
+run_build_scripts(root_node_labels ,true)
+
+
+
 // Example usage
 def root_node_labels = ["ANTLR_OUT_FL" ,"RuleNameList"]
 run_build_scripts(root_node_labels ,true)

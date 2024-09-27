@@ -46,7 +46,7 @@ Synthesize_SyntaxAnnotate_PrintVisitor:\
   $(EXECUTOR_IN_DIR)/Synthesize_SyntaxAnnotate_PrintVisitor
 
 Synthesize_SyntaxAnnotate:\
-  $(JAVA_COMP_IN_PRIMARY_DIR)/StringUtils.java\
+  $(JAVA_COMP_IN_PRIMARY_DIR)/StringUtils.java\https://github.com/Thomas-Walker-Lynch/GQL_to_Cypher
   $(EXECUTOR_IN_DIR)/Synthesize_SyntaxAnnotate
 
 #-----------------------------------------------
@@ -236,6 +236,7 @@ $(JAVA_COMP_OUT_DIR)/%.class: $(JAVA_COMP_IN_PRIMARY_DIR)/%.java
 .PRECIOUS: $(JAVA_COMP_OUT_DIR)/%.jar
 
 # make .jar from .class file
+$(JAVA_COMP_OUT_DIR)/%.class: $(JAVA_COMP_IN_PRIMARY_DIR)/%.java
 $(JAVA_COMP_OUT_DIR)/%.jar: $(JAVA_COMP_OUT_DIR)/%.class
 	@echo "Building $*..."
 	$(JAVA_ARCHIVE) cf $@ -C $(JAVA_COMP_OUT_DIR) $*.class

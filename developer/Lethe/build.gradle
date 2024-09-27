@@ -1,8 +1,23 @@
 task setup {
   doLast {
-    def dirs = ["$(ANTLR_IN_PRIMARY_DIR)", "$(JAVA_COMP_IN_PRIMARY_DIR)", "$(JVM_IN_DIR)", "$(EXECUTOR_IN_DIR)", "test", "deprecated", "experiment", "ologist", "temporary"]
+    def dirs = [
+      "$(ANTLR_IN_PRIMARY_DIR)"
+      ,"$(JAVA_COMP_IN_DIR)"
+      ,"$(JAVA_COMP_IN_PRIMARY_DIR)"
+      ,"$(JAVA_COMP_IN_ANTLR_DIR)"
+      ,"$(JAVA_COMP_IN_SYN_DIR)"
+      ,"$(JVM_IN_DIR)"
+      ,"$(EXECUTOR_IN_DIR)"
+      ,"test"
+      ,"deprecated"
+      ,"experiment"
+      ,"ologist"
+      ,"temporary"
+    ]
     dirs.each { dir ->
-      mkdir dir
+      if (!file(dir).exists()) {
+        mkdir dir
+      }
     }
   }
 }
@@ -54,38 +69,3 @@ tasks.withType(Exec) {
     println "Executing $name"
   }
 }
-
-
-----------------------
-// Function to compile .java files to .class files
-def compileJava(source, target) {
-  tasks.create(name: "compile${source}", type: Exec) {
-    commandLine '$(JAVA_COMP)', '-d', '$(JAVA_COMP_OUT_DIR)', '-sourcepath', '$(JAVA_COMP_IN_DL)', source
-    doLast {
-      println "Compiled ${source} to ${target}"
-    }
-  }
-}
-
-// Function to create .jar files from .class files
-def createJar(source, target) {
-  tasks.create(name: "jar${source}", type: Exec) {
-    commandLine '$(JAVA_ARCHIVE)', 'cf', target, '-C', '$(JAVA_COMP_OUT_DIR)', source
-    doLast {
-      println "Created ${target}"
-    }
-  }
-}
-
-// Function to create wrapper scripts from .jar files
-def createWrapper(source, target) {
-  tasks.create(name: "wrapper${source}", type: Exec) {
-    doLast {
-      def script = new File(target)
-      script.text = "#!/usr/bin/env bash\n$(JAVA_INTERP) -cp ${CLASSPATH}:${JVM_IN_DP}:${JVM_IN_DP}/${source}.jar ${source} \$@"
-      script.setExecutable(true)
-      println "Created program ${target}"
-    }
-  }
-}
-  

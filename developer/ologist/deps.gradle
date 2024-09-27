@@ -1,0 +1,240 @@
+// useful regular expressions
+def base = "[a-zA-Z0-9_-]+"
+def ext = "[a-zA-Z0-9_-]+$"
+def name = "${filebase}\.${fileext}"
+def path = "[.]+/${name}"
+
+
+// Predefined returnable functions for comparison
+def no_match_f = { target ->
+    println "No match found for target: ${target}"
+}
+
+def dependency_list_f = { jarFilePath, javaFilePath ->
+    println "Building JAR file for target: ${jarFilePath}"
+    println "Target: ${jarFilePath} depends on: ${javaFilePath}"
+    return [jarFilePath, javaFilePath]
+}
+
+// Main function to handle target matching
+def target_executor(token) {
+    // Match against the expected executor path pattern
+    def match = token =~ /(?:^executor\/)(${base})\.class$/
+
+    // If there’s no match, return the no_match function
+    if (!match) {
+        return no_match_f.curry(token)
+    }
+
+    // Extract the base name of the matched target (e.g., "RuleNameListRegx")
+    def targetBase = match[0][1]
+
+    // Define the expected Java and JAR file paths
+    def javaFilePath = "${javaCompInDir}${targetBase}.java"
+    def jarFilePath = "${executorDir}${targetBase}.jar"
+
+    // Check if the corresponding Java file exists in the javac directory
+    def javaFile = new File(javaFilePath)
+    if (!javaFile.exists()) {
+        // Return the function to print the missing Java file message
+        return no_java_file_f.curry(javaFilePath)
+    }
+
+    // Return the function that handles the JAR build step
+    return build_jar_f.curry(jarFilePath, javaFilePath)
+}
+
+// Example usage:
+def f = target_executor("executor/RuleNameListRegx.class")
+if (f == no_match_f) {
+    println "No match found"
+} else if (f == no_java_file_f) {
+    println "No corresponding Java file"
+} else {
+    f()  // Call the returned function to perform the build
+}
+
+
+
+
+// useful regular expressions
+def base = "[a-zA-Z0-9_-]+"
+def ext = "[a-zA-Z0-9_-]+$"
+def name = "${filebase}\.${fileext}
+def path = "[.]+/${name}"
+
+def target_executor( token ){
+
+  // "(?:" ... ) matches are thrown away
+  def match = token =~ /(?:^executor/)(${base})(?:${ext})/
+
+  // if there is a corresponding primary javac/primary/%1.java file,
+  // then creating the executable wrapper depends upon the .jar
+  // file, which will later chain back to the java file.
+
+  ...
+
+// returns a function that produces the jar file, or returns
+// a function that, if invoked prints the message that there is
+// no corresponding java file.
+
+
+  return ...
+
+}
+
+
+// Define the build target, dependencies, and functions as triples
+def build_triples = [
+  [
+    targets: [""]
+    deps: ["jvm/%1.class"]
+  ]
+
+  ,[ 
+    targets: ["(?:${path}/)
+   ...
+
+  ],
+]
+
+
+
+
+def programMap = [
+  [target: ["exectutor/
+
+    // RuleNameListRegx does not require ANTLR or external tools
+    "RuleNameListRegx": [
+        "wrapped_jar_from_java": "RuleNameListRegx",
+        "java_depends": [],
+        "grammar": [],
+        "program_deps": []
+    ],
+
+    // RuleNameList does not require ANTLR or external tools
+    "RuleNameList": [
+        "wrapped_jar_from_java": "RuleNameList",
+        "java_depends": [],
+        "grammar": [],
+        "program_deps": []
+    ],
+
+    // Synthesize_SyntaxAnnotate_PrintVisitorMethod has dependencies on Java classes
+    "Synthesize_SyntaxAnnotate_PrintVisitorMethod": [
+        "wrapped_jar_from_java": "Synthesize_SyntaxAnnotate_PrintVisitorMethod",
+        "java_depends": ["StringUtils"],
+        "grammar": [],
+        "program_deps": []
+    ],
+
+    // Synthesize_SyntaxAnnotate_PrintVisitor depends on Synthesize_SyntaxAnnotate_PrintVisitorMethod
+    "Synthesize_SyntaxAnnotate_PrintVisitor": [
+        "wrapped_jar_from_java": "Synthesize_SyntaxAnnotate_PrintVisitor",
+        "java_depends": ["StringUtils", "Synthesize_SyntaxAnnotate_PrintVisitorMethod"],
+        "grammar": [],
+        "program_deps": []
+    ],
+
+    // ANTLRv4_RuleNameList requires the ANTLRv4 grammar and is used in parsing ANTLR grammars
+    "ANTLRv4_RuleNameList": [
+        "wrapped_jar_from_java": "ANTLRv4_RuleNameList",
+        "java_depends": [],
+        "grammar": ["ANTLRv4"],
+        "program_deps": []
+    ],
+
+    // Arithmetic_Echo requires the Arithmetic grammar and ANTLR-generated files
+    "Arithmetic_Echo": [
+        "wrapped_jar_from_java": "Arithmetic_Echo",
+        "java_depends": ["Arithmetic_Echo_PrintVisitor"],
+        "grammar": ["Arithmetic"],
+        "program_deps": []
+    ],
+
+    // Arithmetic_Echo__Test also depends on the Arithmetic grammar
+    "Arithmetic_Echo__Test": [
+        "wrapped_jar_from_java": "Arithmetic_Echo__Test",
+        "java_depends": ["Arithmetic_Echo_PrintVisitor"],
+        "grammar": ["Arithmetic"],
+        "program_deps": []
+    ],
+
+    // Arithmetic_SyntaxAnnotate has dependencies on Arithmetic and generated files
+    "Arithmetic_SyntaxAnnotate": [
+        "wrapped_jar_from_java": "Arithmetic_SyntaxAnnotate",
+        "java_depends": ["Arithmetic_SyntaxAnnotate_PrintVisitor"],
+        "grammar": ["Arithmetic"],
+        "program_deps": []
+    ],
+
+    // Arithmetic_SyntaxAnnotate__Test has similar dependencies as Arithmetic_SyntaxAnnotate
+    "Arithmetic_SyntaxAnnotate__Test": [
+        "wrapped_jar_from_java": "Arithmetic_SyntaxAnnotate__Test",
+        "java_depends": ["Arithmetic_SyntaxAnnotate_PrintVisitor"],
+        "grammar": ["Arithmetic"],
+        "program_deps": []
+    ],
+
+    // Arithmetic2_SyntaxAnnotate has its own grammar and dependencies
+    "Arithmetic2_SyntaxAnnotate": [
+        "wrapped_jar_from_java": "Arithmetic2_SyntaxAnnotate",
+        "java_depends": ["Arithmetic2_SyntaxAnnotate_PrintVisitor"],
+        "grammar": ["Arithmetic2"],
+        "program_deps": []
+    ],
+
+    // Arithmetic2_SyntaxAnnotate__Test has the same dependencies as Arithmetic2_SyntaxAnnotate
+    "Arithmetic2_SyntaxAnnotate__Test": [
+        "wrapped_jar_from_java": "Arithmetic2_SyntaxAnnotate__Test",
+        "java_depends": ["Arithmetic2_SyntaxAnnotate_PrintVisitor"],
+        "grammar": ["Arithmetic2"],
+        "program_deps": []
+    ],
+
+    // ANTLRv4_SyntaxAnnotate requires the ANTLRv4 grammar
+    "ANTLRv4_SyntaxAnnotate": [
+        "wrapped_jar_from_java": "ANTLRv4_SyntaxAnnotate",
+        "java_depends": ["ANTLRv4_SyntaxAnnotate_PrintVisitor"],
+        "grammar": ["ANTLRv4"],
+        "program_deps": []
+    ],
+
+    // Arithmetic_Swap has multiple dependencies on generated files and grammars
+    "Arithmetic_Swap": [
+        "wrapped_jar_from_java": "Arithmetic_Swap",
+        "java_depends": ["Arithmetic_SwapVisitor", "Arithmetic_Echo_PrintVisitor"],
+        "grammar": ["Arithmetic"],
+        "program_deps": []
+    ],
+
+    // GQL-related program with its own grammar and dependencies
+    "GQL_20240412_SyntaxAnnotate": [
+        "wrapped_jar_from_java": "GQL_20240412_SyntaxAnnotate",
+        "java_depends": ["GQL_20240412_SyntaxAnnotate_PrintVisitor"],
+        "grammar": ["GQL_20240412"],
+        "program_deps": []
+    ],
+
+    "GQL_20240412_SyntaxAnnotate__Test": [
+        "wrapped_jar_from_java": "GQL_20240412_SyntaxAnnotate__Test",
+        "java_depends": ["GQL_20240412_SyntaxAnnotate_PrintVisitor"],
+        "grammar": ["GQL_20240412"],
+        "program_deps": []
+    ],
+
+    // Additional tools
+    "TerminalToCategory": [
+        "wrapped_jar_from_java": "TerminalToCategory",
+        "java_depends": [],
+        "grammar": [],
+        "program_deps": []
+    ],
+
+    "GrammarSplitter": [
+        "wrapped_jar_from_java": "GrammarSplitter",
+        "java_depends": [],
+        "grammar": [],
+        "program_deps": []
+    ]
+]

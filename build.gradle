@@ -1,19 +1,9 @@
 
-defaultTasks 'installTools'
+defaultTasks 'installTools', ':developer:preface'
 
-/*--------------------------------------------------------------------------------
-
- Configuration variables
-
-*/
-
-// project structure
-def repoHome    = rootDir
-def toolDir     = "${repoHome}/tool"
-def upstreamDir = "${toolDir}/upstream"
-def executorDir = "${toolDir}/executor"
-def erebusDir   = file("${rootDir}/Erebus")
-
+//--------------------------------------------------------------------------------
+// Project manager should set these configuration variables
+//
 // tool versions
 def antlrVersion = '4.11.1'
 def jdkVersion   = '22.0.1'
@@ -23,36 +13,82 @@ def jdkBuild     = '8'
 def antlrUrl = "https://www.antlr.org/download/antlr-${antlrVersion}-complete.jar"
 def jdkUrl = "https://github.com/adoptium/temurin22-binaries/releases/download/jdk-${jdkVersion}%2B${jdkBuild}/OpenJDK22U-jdk_x64_linux_hotspot_${jdkVersion}_${jdkBuild}.tar.gz"
 
-task installAntlr {
+//--------------------------------------------------------------------------------
+// project structure
+//
+def repoHome    = rootDir
+def toolDir     = "${repoHome}/tool"
+def upstreamDir = "${toolDir}/upstream"
+def executorDir = "${toolDir}/executor"
+def erebusDir   = file("${rootDir}/Erebus")
+
+//--------------------------------------------------------------------------------
+// Configuration phase code
+//
+// Check that we are in the correct environment
+def repoHomeVar = System.getenv('REPO_HOME')
+def projectVar = System.getenv('PROJECT')
+if(
+  !repoHomeVar 
+  || !projectVar
+){
+  println "REPO_HOME or PROJECT not set, has 'env_pm' or 'env_dev' been sourced?"
+  throw new GradleException("Bailing due to not being able to make sense of the environment.")
+}
+if(
+  projectVar != "GQL_to_Cypher" 
+  && projectVar != "GQL_to_Cypher_PM"
+){
+  println "Expected project 'GQL_to_Cypher', or 'GQL_to_Cypher_PM' but found '${projectVar}'."
+  throw new GradleException("Bailing due to apparently being in the wrong project.")
+}
+
+//--------------------------------------------------------------------------------
+// build
+//
+
+task preface {
   doLast {
-    def antlrJar = file("${upstreamDir}/antlr-${antlrVersion}-complete.jar")
-    def antlrExecutorJar = file("${executorDir}/antlr-${antlrVersion}-complete.jar")
+    println "================================================================================"
+    println "installing tools .."
+  }
+}
+
+task installAntlr {
+  dependsOn preface
+  doLast {
+    def antlrJar_FN = "antlr-${antlrVersion}-complete.jar"
+    def antlrJar_FP = file("${upstreamDir}/${antlrJar_FN}")
+    def antlrExecutorJar_FP = file("${executorDir}/${antlrJar_FN}")
 
     mkdir(upstreamDir)
     mkdir(executorDir)
 
-    if (!antlrJar.exists()) {
+    if (!antlrJar_FP.exists()) {
       println "Downloading ANTLR..."
-      new URL(antlrUrl).withInputStream { i -> antlrJar.withOutputStream { it << i } }
+      new URL(antlrUrl).withInputStream { i -> antlrJar_FP.withOutputStream { it << i } }
     }
 
-    if (!antlrExecutorJar.exists()) {
+    if (!antlrExecutorJar_FP.exists()) {
       copy {
-        from antlrJar
+        from antlrJar_FP
         into executorDir
       }
       println "ANTLR installed in executor."
     } else {
       println "ANTLR already installed."
     }
+    project.ext.ANTLRjar = antlrExecutorJar_FP.absolutePath
+
   }
 }
 
 task installJava {
+  dependsOn preface
   doLast {
     def jdkTar = file("${upstreamDir}/jdk-${jdkVersion}.tar.gz")
     def jdkDir = file("${toolDir}/jdk-${jdkVersion}+${jdkBuild}")
-    
+
     mkdir(upstreamDir)
     mkdir(toolDir)
 
@@ -77,7 +113,7 @@ task installJava {
     if (!javaHome.exists()) {
       throw new GradleException("JDK extraction failed.")
     }
-    
+
     // variables saved for use in subproject build scripts
     project.ext.javaHome = jdkDir
 
@@ -90,14 +126,9 @@ task installTools {
   dependsOn installAntlr, installJava
 }
 
-// Ensure all subprojects depend on the tool installation
-subprojects {
-  afterEvaluate { project ->
-    project.tasks.each { task ->
-      task.dependsOn ':installTools'
-    }
-  }
-}
+//--------------------------------------------------------------------------------
+// additional tool install targets
+//
 
 task cleanTool {
   description = 'Cleans the installed tools (but not upstream files)'
@@ -123,7 +154,6 @@ task cleanTool {
 
 task cleanErebus {
   description = "Cleans the project level temporary directory 'Erebus'"  
-  
   doLast {
     if (erebusDir.exists()) {
       erebusDir.eachFile { file ->
