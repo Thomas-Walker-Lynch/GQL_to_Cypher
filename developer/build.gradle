@@ -140,13 +140,29 @@ task preface {
 //---------------------------------------
 // some helpers
 
-def node_type_set = ['symbol' ,'path'] as Set
-def node_mark_set = ['cycle_member' ,'malformed' ] as Set
+def all_node_type_set = ['symbol' ,'path' ,'leaf'] as Set
+def all_node_mark_set = ['cycle_member' ,'wellformed' ] as Set
 
-/*
- */
+def is_leaf_q = { node -> node.type && node.type == 'leaf' }
+def is_marked_q = { node -> node.mark && !node.mark.isEmpty() }
 
-def well_formed_q = { node -> 
+def is_marked_good_q(node){
+  return node.mark && ('wellformed' in node.mark) && !('cycle_member' in node.mark)
+}
+
+def all_form_error_set = [
+  'no_node_label'
+  ,'no_such_node_type'
+  ,'neighbor_property_value_not_a_list'
+  ,'unregistered_mark'
+  ,'symbol_has_build_code'
+  ,'symbol_has_no_dependencies'
+  ,'missing_required_build_code'
+  ,'build_target_has_no_dependencies'
+  ,'leaf_has_neighbor_property'
+  ,'leaf_has_neighbor'
+]
+def wellformed_q = { node -> 
   def form_error_set = [] as Set
 
   if( 
@@ -155,21 +171,22 @@ def well_formed_q = { node ->
     form_error_set << 'no_node_label'
 
   if( 
-    !node.type || !(node.type in node_type_set) 
+    !node.type || !(node.type in all_node_type_set) 
   ) 
-    form_error_set << 'no_node_type'
+    form_error_set << 'no_such_node_type'
 
   if(
     node.neighbor 
     && !(node.neighbor instanceof List)
   )
-    form_error_set << 'neighbor_not_a_list'
+    form_error_set << 'neighbor_property_value_not_a_list'
 
   if( 
-    node.type == "path" 
-    && (!node.build || !(node.build instanceof Closure))
-  )
-    form_error_set << 'no_build_code'
+    node.mark
+    && (node.mark instance of Set)
+    && ! (node.mark.every {it in all_node_mark_set})
+  ) 
+    form_error_set << 'unregistered_mark'
 
   if( 
     node.type == "symbol" 
@@ -178,16 +195,40 @@ def well_formed_q = { node ->
     form_error_set << 'symbol_has_build_code'
 
   if( 
-    node.mark
-    && (node.mark instance of Set)
-    && ! (node.mark.every {it in node_mark_set})
-  ) 
-    form_error_set << 'unregistered_mark'
+    node.type == "symbol" 
+    && ( !node.neighbor || node.neighbor.isEmpty() )
+  )
+    form_error_set << 'symbol_has_no_dependencies'
+
+  if( 
+    node.type == "path" 
+    && (!node.build || !(node.build instanceof Closure))
+  )
+    form_error_set << 'missing_required_build_code'
+
+  if( 
+    node.type == "path" 
+    && ( !node.neighbor || node.neighbor.isEmpty() )
+  )
+    form_error_set << 'build_target_has_no_dependencies'
+
+  if( 
+    node.type == "symbol" 
+    && ( node.neighbor || node.neighbor.isEmpty() )
+  )
+    form_error_set << 'symbol_has_no_dependencies'
+
+  if( 
+    node.type == "leaf" 
+    && node.neighbor
+  ){
+    form_error_set << 'leaf_has_neighbor_property'
+    if( !node.neighbor.isEmpty()  )
+      form_error_set << 'leaf_has_neighbor'
+  }
 
   return form_error_set
 }
-def is_leaf_q = { node ->  !node.neighbor || node.neighbor.isEmpty() }
-def is_marked_q = { node ->  node.mark && !node.mark.isEmpty() }
 
 
 /*----------------------------------------
@@ -393,7 +434,7 @@ def node_jar_f(node) {
   ]
 }
 
-// list of the recognizer functions
+// list of the pattern recognizer functions
 def node_f_list = [
   node_leaf_f
   ,node)executor_f
@@ -403,17 +444,16 @@ def node_f_list = [
 ]
 
 
-// combines the map and recognizer functions into a single lookup
+// Given a node_label, returns the node or null.
 def lookup(node_label, verbose = false){
-  // the actual lookup
   def lookup_node = node_map[node_label]
   if( lookup_node ){
     lookup_node.label = node_label
   } else {
     def match_result
-    for( func in node_f_list ){
+    for(func in node_f_list){
       match_result = func(node_label)
-      if( match_result.status == "matched" ){
+      if(match_result.status == "matched"){
         lookup_node = match_result
         break
       }
@@ -425,77 +465,118 @@ def lookup(node_label, verbose = false){
     return null
   }
 
-  // If we already marked this one as malformed, do not check it again
-  // This is done primarily to avoid duplicate error messages, as it isn't a big
-  // performance win.
-  if( lookup_node.mark && ('malformed' in lookup_node.mark) ) return null
-
-  // Check if the node is well formed
-  def form_errors = well_formed_q(lookup_node)
-  if( !form_errors.isEmpty() ){
-    // Mark the node as malformed
-    if( !lookup_node.mark ) lookup_node.mark = [] as Set
-    lookup_node.mark << 'malformed' 
-
-    // Tell the user
-    if( verbose ){
-      println "Lookup error: Node ${node_label} is malformed due to: ${form_errors.join(', ')}"
-    }
-
-    // Refuse to return a malformed node
-    return null
-  }
-
   return lookup_node
 }
 
+// Given a node_label, if found, returns node if it is marked good.
+def lookup_marked_good(node_label, verbose = false){
+  def node = lookup(node_label, verbose)
+  if( node && is_marked_good_q(node) ) return node;
+  return null;
+}
+
+
+
+
 /*--------------------------------------------------------------------------------
- is_acyclic_q checks a dependency graph for cycles
+ do_markup_graph checks given a graph, marks nodes in the graph, and returns a set
+ potentially with the marks 'given_argument_not_accepted', `wellformed`,
+ `acyclic`.
 
- given a dependency graph. Returns either 'given_argument_not_accepted',
- `cycles` or `acyclic`.
+ Well formed nodes are marked, 'wellformed'.  Nodes that are part of a cycle
+ are marked 'cycle_member'.
 
- marks the nodes that are in cycles.
+ */
 
- There is a call function and a helper function
+// Given a node label list. Looks up and marks the nodes in the list. Returns
+// 'all_wellformed' if all nodes are wellformed, otherwise it returns
+// 'exists_malformed'.
+def mark_the_wellformed_f(node_labels, boolean verbose = true){
+  def all_wellformed = true
 
-*/
+  def neighbors = node_labels.collect{ neighbor_label ->
+    def neighbor_node = lookup(neighbor_label)
+    def form_errors = wellformed_q(neighbor_node)
+    if(form_errors.isEmpty()){
+      neighbor_node.mark = neighbor_node.mark ?: [] as Set
+      neighbor_node.mark << 'wellformed'
+    } else {
+      all_wellformed = false
+      if(verbose){
+        if(neighbor_node.label && neighbor_node.label.length() > 0){
+          print("node ${neighbor_node.label} is malformed due to:")
+        } else {
+          print("anonymous node is malformed due to:")
+        }
+        form_errors.each { error -> print(" ${error}") }
+        println("")
+      }
+    }
+    neighbor_label
+  }
 
-def is_acyclic_q_descend(path_stack ,boolean verbose = true){
-  def local_path = path_stack.collect{ node_label -> lookup(node_label) }
-  def local_node = local_path[-1]
+  return all_wellformed ? 'all_wellformed' : 'exists_malformed'
+}
+
+def markup_graph_f_descend(path_stack, boolean verbose = true){
+  def ret_value = [] as Set
+  def local_path = path_stack.collect{ it[0] }
+  def local_node_label = local_path[-1]
   def cycle_start_index
 
   do{
     // Check for a cycle in the local path
-    cycle_start_index = local_path[0..-2].findIndexOf{ node -> node.label == local_node.label }
-    if( cycle_start_index != -1 ){ // Cycle detected
-      if( verbose ) print "is_acyclic_q:: dependency cycle found:"
-      local_path[cycle_start_index..-1].each{ cycle_node ->
-        if( verbose ) print " ${cycle_node.label}"
+    cycle_start_index = local_path[0..-2].findIndexOf{ it == local_node_label }
+    if(cycle_start_index != -1){ // Cycle detected
+      ret_value << 'cycle_found'
+      if(verbose) print "markup_graph_f_descend:: dependency cycle found:"
+      local_path[cycle_start_index..-1].each{ cycle_node_label ->
+        def cycle_node = lookup(cycle_node_label)
+        if(verbose) print " ${cycle_node.label}"
         cycle_node.mark = cycle_node.mark ?: [] as Set // Initialize mark set if needed
         cycle_node.mark << 'cycle_member'
       }
-      if( verbose ) println ""
-      // Pop off the stack above the cycle start, so that search can continue if desired
+      if(verbose) println ""
+      // we can not continue searching after the loop so, we pop back to treat
+      // the first node in the loop as though a leaf node.
       path_stack = path_stack[0..cycle_start_index]
-      return 'cycle_found'
+      return ret_value
     }
 
-    // Put this test after the cycle detector in case another definition with
-    // the same label had children and participated in a cycle.
-    if( local_node.neighbor.isEmpty() ) return 'leaf_node'
+    // a 'de-facto' leaf node test subtleties here because we have not yet
+    // determined if the nodes we are wellformed. This is purposeful, as
+    // this function does not know about the relationships between the 
+    // possible error marks.
+    def local_node = lookup(local_node_label)
+    if(local_node.neighbor.isEmpty()){
+      ret_value << 'defacto_leaf_node'
+      return ret_value
+    }
 
+    // Mark the wellformed nodes and get the result
+    def result = mark_the_wellformed_f(local_node.neighbor, verbose)
+    if(result == 'exists_malformed'){
+      ret_value << 'exists_malformed'
+    }
+    
     // Descend further into the tree.
     path_stack << local_node.neighbor.clone()
-    local_node = lookup(local_node.neighbor[0])
-    local_path << local_node
-  }while( true )
+    local_node_label = local_node.neighbor[0]
+    local_path << local_node_label
+  }while(true)
 }
 
-def is_acyclic_q(root_node_labels ,boolean verbose = true){
-  // We are optimistic.
-  def return_value = 'acyclic'
+// given root_node_labels, marks up graph, returns a set possibly
+// containing 'all_wellformed'  and 'cycles_exist'.
+def markup_graph_f(root_node_labels, boolean verbose = true){
+  def ret_value = [] as Set
+  def exists_malformed = false;
+
+  // check the root nodes
+  def result = mark_the_wellformed_f(root_node_labels, verbose)
+  if(result == 'exists_malformed'){
+    ret_value << 'exists_malformed'
+  }
 
   // Initialize the DFS tree iterator.
   def path_stack = []
@@ -504,26 +585,35 @@ def is_acyclic_q(root_node_labels ,boolean verbose = true){
   // iterate over left side tree descent, not ideal as it starts at the
   // root each time, but avoids complexity in the cycle detection logic.
   do{
-    def result = is_acyclic_q_descend(path_stack ,verbose)
-    if(result == 'cycle_found') return_value = result
+    def result = markup_graph_f_descend(path_stack, verbose)
+    if('cycle_found' in result) ret_value << 'cycle_exists'
+    if('exists_malformed' in result) exists_malformed = true;
 
     // increment the iterator to the next leftmost path
     def top_list = path_stack[-1]
     top_list.remove(0)
-    if( top_list.isEmpty() ) path_stack.pop()
+    if(top_list.isEmpty()) path_stack.pop()
 
-  }while( !path_stack.isEmpty() )
+  }while(!path_stack.isEmpty())
 
-  return return_value
+  if(!exists_malformed) ret_value << 'all_wellformed'
+  if( verbose ){
+    if(exists_malformed) println("one or more malformed nodes were found")
+    def exists_cycle = 'cycle_found' in ret_value
+    if(exists_cycle) println("one or more cyclic dependency loop found")
+    if( exists_malformed || exists_cycle ) println("will attempt to build unaffected nodes")
+  }
+
+  return ret_value
 }
 
 // LocalWords:  FN FPL DN DNL RuleNameListRegx RuleNameList PrintVisitorMethod
-// LocalWords:  PrintVisitor SyntaxAnnotate
+// LocalWords:  PrintVisitor SyntaxAnnotate wellformed defacto
 
 /*--------------------------------------------------------------------------------
  run the build scripts
    depends upon is_acyclic having already marked up the graph.
-
+o
 Initialization:
 * visited: A set to keep track of visited nodes.
 * build_order: A list to store the nodes in the order they should be built.
@@ -543,42 +633,66 @@ Build Script Execution:
 
 */
 
-def run_build_scripts(root_node_labels ,boolean verbose = false){
-  def visited = [] as Set
-  def build_order = []
+import java.nio.file.Files
+import java.nio.file.Paths
 
-  def dfs(node_label){
-    def node = lookup(node_label ,verbose)
-    if( !node ) return
-
-    if( node.label in visited ) return
-    visited << node.label
-
-    node.neighbor.each{ neighbor_label ->
-      dfs(neighbor_label)
-    }
-
-    build_order << node
+def good_dependency_q( node ){
+  if( node.type in ['path' ,'leaf'] ){
+    def node_path = Paths.get( node.label )
+    if( !Files.exists( node_path ) ) return false
   }
-
-  root_node_labels.each{ root_label ->
-    dfs(root_label)
-  }
-
-  build_order.reverse().each{ node ->
-    if( node.build ){
-      println "Running build script for ${node.label}"
-      node.build(node ,node.neighbor)
-    }
-  }
+  return (
+    node.mark 
+    && ( 'wellformed' in node.mark ) 
+    && !( 'build_failed' in node.mark ) 
+    && !( 'cycle_member' in node.mark )
+  )
 }
 
-// Example usage
-def root_node_labels = ["ANTLR_OUT_FL" ,"RuleNameList"]
-run_build_scripts(root_node_labels ,true)
+def build_status_q( node, verbose = true ){
+  if( node.type == 'leaf' ){
+    def node_path = Paths.get( node.label )
+    if( !Files.exists( node_path ) ){
+      node.mark.add( 'build_failed' ) // so that it will not be a good_dependency
+      if( verbose ) println( "Leaf node ${node.label} is missing." )
+    }
+    return 'leaf'
+  }
 
+  if( node.type == 'symbol' ){
+    def dependencies = node.neighbor.findAll{ neighbor_label ->
+      def neighbor_node = lookup( neighbor_label )
+      return good_dependency_q( neighbor_node )
+    }
+    if( dependencies.size() != node.neighbor.size() ) return 'dependency_problem'
+    return 'should_build'
+  }
 
-def run_build_scripts(root_node_labels ,boolean verbose = false){
+  if( node.type == 'path' ){
+    def node_path = Paths.get( node.label )
+    if( !Files.exists( node_path ) ) return 'should_build'
+
+    def node_last_modified = Files.getLastModifiedTime( node_path ).toMillis()
+
+    def dependencies = node.neighbor.findAll{ neighbor_label ->
+      def neighbor_node = lookup( neighbor_label )
+      return good_dependency_q( neighbor_node )
+    }
+    if( dependencies.size() != node.neighbor.size() ) return 'dependency_problem'
+
+    def dependency_last_modified = dependencies.collect{ neighbor_label ->
+      def neighbor_node = lookup( neighbor_label )
+      def neighbor_path = Paths.get( neighbor_node.label )
+      return Files.getLastModifiedTime( neighbor_path ).toMillis()
+    }
+
+    if( dependency_last_modified.any{ it > node_last_modified } ) return 'should_build'
+  }
+
+  return 'up_to_date'
+}
+
+def run_build_scripts_f( root_node_labels, boolean verbose = true ){
   if( root_node_labels.isEmpty() ) return
 
   def visited = [] as Set
@@ -591,13 +705,22 @@ def run_build_scripts(root_node_labels ,boolean verbose = false){
 
   do{
     def node_label = stack.pop()
-    def node = lookup(node_label ,verbose)
+    def node = lookup( node_label, verbose )
     if( !node ) continue
 
     if( node.label in visited ) continue
     visited << node.label
 
-    node.neighbor.each{ neighbor_label ->
+    if( !is_marked_good_q( node ) ){
+      if( verbose ) println( "Skipping malformed node ${node.label}" )
+      continue
+    }
+
+    // Clear the build_failed mark
+    node.mark.remove( 'build_failed' )
+
+    // reverse to be consistent in using the left subtree first
+    node.neighbor.reverse().each{ neighbor_label ->
       stack << neighbor_label
     }
 
@@ -605,13 +728,92 @@ def run_build_scripts(root_node_labels ,boolean verbose = false){
   }while( !stack.isEmpty() )
 
   build_order.reverse().each{ node ->
-    if( node.build ){
-      println "Running build script for ${node.label}"
-      node.build(node ,node.neighbor)
+    def build_status = build_status_q( node, verbose )
+    if( build_status == 'should_build' ){
+      println( "Running build script for ${node.label}" )
+      node.build( node, node.neighbor )
+
+      // Check if the build updated the target file
+      if( build_status_q( node, verbose ) == 'should_build' ){
+        println( "Build failed for ${node.label}" )
+        node.mark = node.mark ?: [] as Set
+        node.mark << 'build_failed'
+      }
+    } else if( build_status == 'dependency_problem' ){
+      println( "Skipping build for ${node.label} due to dependency problems" )
+    } else if( build_status == 'leaf' ){
+      println( "Skipping build for leaf node ${node.label}" )
     }
   }
 }
 
-// Example usage
-def root_node_labels = ["ANTLR_OUT_FL" ,"RuleNameList"]
-run_build_scripts(root_node_labels ,true)
+
+def mark_for_clean_q( node ){
+  if( node.type == 'leaf' ) return false
+
+  if( node.type == 'symbol' || node.type == 'path' ){
+    def dependencies = node.neighbor.findAll{ neighbor_label ->
+      def neighbor_node = lookup( neighbor_label )
+      return good_dependency_q( neighbor_node )
+    }
+    return dependencies.size() == node.neighbor.size()
+  }
+
+  return false
+}
+
+def clean_nodes( root_node_labels, boolean verbose = true ){
+  if( root_node_labels.isEmpty() ) return
+
+  def visited = [] as Set
+  def clean_order = []
+  def stack = []
+
+  root_node_labels.each{ root_label ->
+    stack << root_label
+  }
+
+  do{
+    def node_label = stack.pop()
+    def node = lookup( node_label, verbose )
+    if( !node ) continue
+
+    if( node.label in visited ) continue
+    visited << node.label
+
+    if( !is_marked_good_q( node ) ){
+      if( verbose ) println( "Skipping malformed node ${node.label}" )
+      continue
+    }
+
+    // reverse to be consistent in using the left subtree first
+    node.neighbor.reverse().each{ neighbor_label ->
+      stack << neighbor_label
+    }
+
+    clean_order << node
+  }while( !stack.isEmpty() )
+
+  clean_order.reverse().each{ node ->
+    if( mark_for_clean_q( node ) ){
+      def can_clean = true
+      node.uses?.each{ used_label ->
+        def used_node = lookup( used_label )
+        if( used_node && !mark_for_clean_q( used_node ) ){
+          can_clean = false
+          if( verbose ) println( "Cannot clean ${node.label} because it uses ${used_node.label}" )
+        }
+      }
+      if( can_clean ){
+        println( "Cleaning node ${node.label}" )
+        node.clean( node, node.neighbor )
+      } else {
+        if( verbose ) println( "Skipping node ${node.label} due to dependency problems" )
+      }
+    } else if( node.type == 'leaf' ){
+      if( verbose ) println( "Skipping leaf node ${node.label}" )
+    } else {
+      if( verbose ) println( "Skipping node ${node.label} due to dependency problems" )
+    }
+  }
+}
