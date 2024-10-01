@@ -1,37 +1,13 @@
 
-Directories are named after the agent that uses the files in them. See
-`readers/directory_naming.txt` for more information.
+GQL_to_Cypher
 
-The top level directory is reserved for project management. This includes
-the git repo, virtual environment tool installs, and the startup scripts.
+Is a work in progress.
 
-An `executor` is a generic name for a program that runs a file. It is used to
-name directories that might have a mix of directly loaded, interpreted, and
-shell script files. Files in an 'exector' directory are for the executor.
+Is a program to translate GQL queries into Cypher queries.
 
-
-
-Document readers will find material in the 'readers' directory.
-
-As you are reading this you might be a GQL_to_Cypter-ologist.  Please read
-documents in the ./ologist directory for project information, and the
-documents in the developer/ologist directory for documents on building
-the project.
-
-The project top level is for project management and imported tools. Developers
-do development work in the `developer` directory.
-
-For developers, from the top of the project get started by typing:
-```
-> . executor/env_dev
-``
-
-This will setup the environment and `cd` to the developer directory.  (`env_dev`
-is analogous to the Python virtual environment `activate`.)
-
-# About
-
-This is a project to develope a transpiler from GQL to Cypher.
+An ANTLR grammar is used to make a parse tree from a GQL source file.  The
+parse tree is then transformed into a form printable in Cypher.  A preface
+is written followed by the print ot of the parse tree in Cypher.
 
 
 
