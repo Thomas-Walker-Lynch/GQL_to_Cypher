@@ -13,10 +13,10 @@ handle_error() {
 }
 
 # Check if the upstream directory exists
-if [ -d "$REPO_HOME/tool/upstream" ]; then
+if [ -d "$REPO_HOME/toolsmith/upstream" ]; then
   echo "Cleaning up upstream directory..."
-  find "$REPO_HOME/tool/upstream" -mindepth 1 -maxdepth 1 -not -type l -exec rm -rf {} + || handle_error
-  find "$REPO_HOME/tool/upstream" -maxdepth 1 -type l -exec rm -f {} + || handle_error
+  find "$REPO_HOME/toolsmiths/upstream" -mindepth 1 -maxdepth 1 -not -type l -exec rm -rf {} + || handle_error
+  find "$REPO_HOME/toolsmiths/upstream" -maxdepth 1 -type l -exec rm -f {} + || handle_error
 else
   echo "Upstream directory does not exist."
 fi

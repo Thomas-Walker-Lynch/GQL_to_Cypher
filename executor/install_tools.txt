@@ -1,0 +1,36 @@
+
+1. install gradle
+
+  As of the date of this writing, `gradle` is not available in the typical
+  repos, so:
+
+    cd "$REPO_HOME/toolsmiths/upstream"
+    curl -O https://services.gradle.org/distributions/gradle-8.10-rc-1-all.zip
+
+    cd "REPO_HOME"
+    unzip toolsmiths/upstream/gradle-8.10-rc-1-all.zip -d toolsmiths/
+
+    place in user's environment:
+    export GRADLE_HOME="$REPO_HOME/toolsmiths/gradle-8.10-rc-1"
+    export PATH="$GRADLE_HOME/bin:$PATH"
+
+2. other tool install scripts have been integrated into `$REPO_HOME/build.gradle`.
+(There is a separate `developer/build.gradle` for building the project. the
+$REPO_HOME/build.gradle is for installing the tools.
+
+3. about Groovy ...
+
+  $REPO_HOME/build.gradle makes the 'groovy' interpreter is a shell script
+  wrapper around the gradle library groovy jar.  Admin privileges are not needed
+  for this. 
+
+  To install Groovy directly:
+
+  sudo apt-get install groovy
+  sudo dnf install groovy
+
+  curl -s "https://get.sdkman.io" | bash
+  source "$HOME/.sdkman/bin/sdkman-init.sh"
+  sdk install groovy
+
+  .. apparently sdk can also be used to install gradle

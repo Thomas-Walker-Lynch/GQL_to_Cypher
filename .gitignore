@@ -1,5 +1,4 @@
-#note also the .gitignore files in the tool and developer directories and any
-# other directory that might have one.
+# be careful to note also the .gitignore files in various directories.
 
 #*#
 *~

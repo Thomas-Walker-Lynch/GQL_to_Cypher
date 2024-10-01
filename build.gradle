@@ -121,9 +121,27 @@ task installJava {
   }
 }
 
+task installGroovyWrapper {
+  doLast {
+    def groovyJar = file("${gradle.gradleHomeDir}/lib/groovy-all.jar")
+    def wrapperDest = file("${toolDir}/bin/groovy-wrapper")
+    
+    if (groovyJar.exists()) {
+      println "Creating Groovy wrapper script in ${wrapperDest}"
+      wrapperDest.text = 
+      '''#!/bin/bash
+      exec java -cp ${groovyJar.absolutePath} groovy.ui.GroovyMain "$@"
+      '''
+      wrapperDest.setExecutable(true)
+    } else {
+      throw new GradleException("Groovy .jar file not found in Gradle library")
+    }
+  }
+}
+
 // Add a task to install both tools
 task installTools {
-  dependsOn installAntlr, installJava
+  dependsOn installAntlr, installJava, installGroovyWrapper
 }
 
 //--------------------------------------------------------------------------------
@@ -152,8 +170,8 @@ task cleanTool {
   }
 }
 
-task cleanErebus {
-  description = "Cleans the project level temporary directory 'Erebus'"  
+task Tanuki {
+  description = "Cleans the project level temporary directory"  
   doLast {
     if (erebusDir.exists()) {
       erebusDir.eachFile { file ->

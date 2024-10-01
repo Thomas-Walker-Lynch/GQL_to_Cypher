@@ -2,13 +2,6 @@
 Directories are named after the agent that uses the files in them. See
 `readers/directory_naming.txt` for more information.
 
-The top level directory is reserved for project management. This includes
-the git repo, virtual environment tool installs, and the startup scripts.
-
-An `executor` is a generic name for a program that runs a file. It is used to
-name directories that might have a mix of directly loaded, interpreted, and
-shell script files. Files in an 'exector' directory are for the executor.
-
 
 
 Document readers will find material in the 'readers' directory.

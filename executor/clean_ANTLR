@@ -13,7 +13,7 @@ handle_error() {
 }
 
 # Clean the ANTLR directory
-antlr_dir=$(find "$REPO_HOME/tool" -maxdepth 1 -type d -name "antlr4-*" | head -n 1)
+antlr_dir=$(find "$REPO_HOME/toolsmiths" -maxdepth 1 -type d -name "antlr4-*" | head -n 1)
 if [ -n "$antlr_dir" ]; then
   find "$antlr_dir" -mindepth 1 -maxdepth 1 -not -type l -exec rm -rf {} + || handle_error
   find "$antlr_dir" -maxdepth 1 -type l -exec rm -f {} + || handle_error

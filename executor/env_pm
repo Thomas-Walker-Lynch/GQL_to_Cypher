@@ -12,9 +12,18 @@ if [ -z "$REPO_HOME" ]; then
   source "${script_path}/env_base"
 fi
 
-PATH="$REPO_HOME/executor:$PATH"
 PROJECT="$PROJECT"_PM
 
+export GRADLE_HOME="$REPO_HOME/toolsmiths/gradle-8.10-rc-1"
+
+# includes tools for installing and testing
+export PATH=\
+"$REPO_HOME"/executor\
+:"$REPO_HOME"/toolsmiths/executor\
+:"$GRADLE_HOME"/bin\
+:"$PATH"
+
+# no sneaky hidden files
 alias ls="ls -a"
 
 echo "${BASH_SOURCE[0]}" "complete"

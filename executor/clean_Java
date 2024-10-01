@@ -13,7 +13,7 @@ handle_error() {
 }
 
 # Clean the JDK directory
-jdk_dir=$(find "$REPO_HOME/tool" -maxdepth 1 -type d -name "jdk-*" | head -n 1)
+jdk_dir=$(find "$REPO_HOME/toolsmiths" -maxdepth 1 -type d -name "jdk-*" | head -n 1)
 if [ -n "$jdk_dir" ]; then
   find "$jdk_dir" -mindepth 1 -maxdepth 1 -not -type l -exec rm -rf {} + || handle_error
   find "$jdk_dir" -maxdepth 1 -type l -exec rm -f {} + || handle_error

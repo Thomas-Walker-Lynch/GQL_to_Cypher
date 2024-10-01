@@ -44,6 +44,12 @@ a pretty good job of that already.)
   Make does not chain pattern rules, which is causing problems. Everyone in
   Javaland apparently is using Maven or Gradle, so switching over to Gradle.
   
+2024-10-01
+
+  Hve moved to gradle and have developed a bespoke dependency graph tool.
+  Breaking out the dependency graph tool as its own project, albeit a
+  small one.
+
 
 <!--  LocalWords:  Javaland Gradle
  -->
