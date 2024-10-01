@@ -38,10 +38,10 @@ env.CLASSPATH += ":${env.ANTLR_JAR}"
 
 //--------------------------------------------------------------------------------
 // PM installed tools to be used
-//    these should be added to the project object by the installer, and taken
+//    these should be added to the project object by the installer ,and taken
 //    from the project object here.
 //
-// Tools used (set by project manager: JAVA_HOME, ANTLR_JAR, DEVELOPER_HOME)
+// Tools used (set by project manager: JAVA_HOME ,ANTLR_JAR ,DEVELOPER_HOME)
 def JAVA_COMP_FP = "${env.JAVA_HOME}/bin/javac"   // Java compiler path
 def JAVA_INTERP_FP = "${env.JAVA_HOME}/bin/java"  // Java interpreter path
 def JAVA_ARCHIVE_FP = "${env.JAVA_HOME}/bin/jar"  // Java archive tool path
@@ -86,7 +86,7 @@ def printMissingVars(missingVars) {
   } else if (missingVars.size() == 1) {
     println "This environment variable was not set: ${missingVars[0]}"
   } else {
-    println "These environment variables were not set: ${missingVars.join(', ')}"
+    println "These environment variables were not set: ${missingVars.join(' ,')}"
   }
 }
 
@@ -107,7 +107,7 @@ task preface {
     printMissingVars(missingVars)
     if (env.PROJECT != "GQL_to_Cypher") {
       error_project = true
-      println "Expected project 'GQL_to_Cypher', but found '${env.PROJECT}'."
+      println "Expected project 'GQL_to_Cypher' ,but found '${env.PROJECT}'."
     }
     if (error_missing || error_project) {
       throw new GradleException("Bailing due to missing environment variables.")
@@ -120,36 +120,47 @@ task preface {
 }
 
 /*--------------------------------------------------------------------------------
- Dependency Graph
-
- A node is a property list.
-
- A node label is a relative path to a file, or a symbolic value.
-
- We either a) put nodes in a map that key on the node label then return the node,
- or b) we use functions that recognize the node label and return a property list.
- The `lookup(node-label)` function combines all methods to find the node.
-
- A will formed node will have these properties: label and type.
-
- A node without a 'neighbor' property is said to be a 'leaf_node'.
-
- `path` type nodes have a `build` property.  
+ Some dependency graph features
 */
 
-//---------------------------------------
-// some helpers
-
 def all_node_type_set = ['symbol' ,'path' ,'leaf'] as Set
-def all_node_mark_set = ['cycle_member' ,'wellformed' ] as Set
 
-def is_leaf_q = { node -> node.type && node.type == 'leaf' }
-def is_marked_q = { node -> node.mark && !node.mark.isEmpty() }
+def persistent_node_mark_set = ['cycle_member' ,'wellformed' ,'build_failed'] as Set
 
-def is_marked_good_q(node){
-  return node.mark && ('wellformed' in node.mark) && !('cycle_member' in node.mark)
+def leaf_q = { node -> node.type && node.type == 'leaf' }
+def marked_q = { node -> node.mark && !node.mark.isEmpty() }
+
+// 'wellformed' and `cycle_member` marks set by `well_formed_q` function
+// 'build_failed' set by `run_build_scripts_f`
+def marked_good_q(node){
+  return (
+    node 
+    && node.mark 
+    && ('wellformed' in node.mark) 
+    && !('cycle_member' in node.mark)
+    && !('build_failed' in node.mark)
+  )
 }
 
+def set_mark(node ,mark){
+  node.mark = node.mark ?: [] as Set
+  node.mark << mark
+}
+
+def clear_mark(node ,mark){
+  if( node.mark ) node.mark.remove(mark)
+}
+
+def file_exists_q(node_label) {
+  def node_path = Paths.get(node_label)
+  return Files.exists(node_path)
+}
+
+
+/*--------------------------------------------------------------------------------
+ Well formed dependency graph node checker.
+
+*/
 def all_form_error_set = [
   'no_node_label'
   ,'no_such_node_type'
@@ -184,7 +195,7 @@ def wellformed_q = { node ->
   if( 
     node.mark
     && (node.mark instance of Set)
-    && ! (node.mark.every {it in all_node_mark_set})
+    && ! (node.mark.every {it in persistent_node_mark_set})
   ) 
     form_error_set << 'unregistered_mark'
 
@@ -231,20 +242,43 @@ def wellformed_q = { node ->
 }
 
 
-/*----------------------------------------
- maps node label -> node
+/*--------------------------------------------------------------------------------
+ Dependency DAG definition.
 
- The keys are the node labels. They are formally added as the value to the
- `label` property by the lookup function.
+ Programmers will add new entries here when adding new programs to be built.
 
- Each leaf node must have a node definition. All path labels that lead to the
- `javac/leaf` directory are recognized as leaf nodes. A leaf node has a
- `type` property value of `leaf`, and they can be added to the map at different
- file paths.
+ 'node': a dictionary of properties.
+ 'file node': a path or leaf type node.
+ 'node file': the label of a path or leaf type node ,relative to the developer's directory.
+
+ Node Properties:
+ - type: The type of the node: 'leaf' ,'symbol' ,or 'path'.
+ - label: Unique label. AKA ,the 'node file'.
+ - neighbor: List of labels for the node's dependencies.
+ - must_have: Files that should not be removed if the given node file is not removed.
+ - build: For path type nodes ,code that builds the node.
+ - mark: a set of 'mark' tokens optionally placed on a node
+
+ DAG is defined through the 'lookup' function ,which when given a label ,returns
+ a dictionary. Lookup uses a combination of a map keyed on the label ,and a list
+ of label recognizer functions that each return a dictionary when a match is
+ found. 
 
 */
 
 def node_map = [
+
+  "all" : [
+    ,type: "symbol"
+    ,neighbor: [
+      "ANTLR_OUT_FL"
+      ,"RuleNameList"
+      ,"RuleNameListRegx"
+      ,"Synthesize_SyntaxAnnotate"
+      ,"Synthesize_SyntaxAnnotate_PrintVisitor"
+      ,"Synthesize_SyntaxAnnotate_PrintVisitorMethod"
+    ]
+  ]
 
   "ANTLR_OUT_FL" : [
     ,type: "symbol"
@@ -269,6 +303,38 @@ def node_map = [
     ]
   ]
 
+  "Synthesize_SyntaxAnnotate.class" : [
+    type: 'path',  // It's a path type node
+    neighbor: [
+      "${dir_map.JAVA_COMP_IN_LEAF}/Synthesize_SyntaxAnnotate.java",  // Dependency
+      "${dir_map.JAVA_COMP_IN_LEAF}/StringUtils.java"  // Dependency
+    ],
+    build: { node, neighbor ->
+      def javac_cmd = "${JAVA_COMP_FP} -d ${dir_map.JAVA_COMP_OUT} ${neighbor.join(' ')}"
+      javac_cmd.execute().waitFor()
+    }
+  ]
+
+
+  "Synthesize_SyntaxAnnotate.class" : [
+    type: "path",
+    neighbor: [
+      "${dir_map.JAVA_COMP_IN_SYN}/Synthesize_SyntaxAnnotate.java"
+    ],
+    build: { node ->
+      def src = "${dir_map.JAVA_COMP_IN_SYN}/Synthesize_SyntaxAnnotate.java"
+      def dest = "${dir_map.JAVA_COMP_IN_SYN}/Synthesize_SyntaxAnnotate.class"
+      exec {
+        commandLine = [JAVA_COMP_FP, '-d', dir_map.JAVA_COMP_OUT, src]
+      }
+      if (!file_exists_q(dest)) {
+        throw new GradleException("Failed to compile Synthesize_SyntaxAnnotate.java")
+      }
+    }
+  ]
+
+
+
   ,"Synthesize_SyntaxAnnotate_PrintVisitor" : [
     ,type: "symbol"
     ,neighbor: [
@@ -287,10 +353,9 @@ def node_map = [
   ]
 ]
 
-//----------------------------------------
-// the following are recognizer functions that return node definitions.
+// start of node_label recognizer functions list
 
-// any leaf node located in javac/leaf
+// recognizes any leaf node due to being located in javac/leaf
 def node_leaf_f(node_label) {
   def leafNodePattern = ~/${dir_map['JAVA_COMP_IN_LEAF']}(.*)/
   def match = node_label =~ leafNodePattern
@@ -335,12 +400,14 @@ def node_executor_f(node) {
     ,label: node
     ,type: "path"
     ,neighbor: [jarFilePath]
-    ,build: { node, neighbor -> 
+    ,must_have: [jarFilePath]
+    ,build: { node ,neighbor -> 
 
       // The script for wrapping the jar file:
-      def wrapper = """
-        #!/usr/bin/env bash
-        ${dir_map['JAVA_INTERP']} -cp \${CLASSPATH}:${dir_map['JVM_IN']}:${dir_map['JVM_IN']}/${baseName}.jar ${baseName} \\\$\\@
+      def wrapper =
+      """
+      #!/usr/bin/env bash
+      ${dir_map['JAVA_INTERP']} -cp \${CLASSPATH}:${dir_map['JVM_IN']}:${dir_map['JVM_IN']}/${baseName}.jar ${baseName} \\\$\\@
       """
       
       new File(wrapperFilePath).withWriter('UTF-8') { writer ->
@@ -379,7 +446,7 @@ def node_grammar_f(node) {
   ]
 }
 
-// any class file (built from a name corresponding .java file)
+// Recognizes any class file (built from a corresponding .java file of the same name)
 def node_class_f(node) {
 
   def match = node =~ /^(${dir_map['JAVA_COMP_OUT']})(${base})\.class$/
@@ -388,7 +455,7 @@ def node_class_f(node) {
   }
 
   def baseName = match[0][2]
-  def javaFilePath = "${dir_map['JAVA_COMP_IN_LEAF']}${baseName}.java"
+  def javaFilePath = "${dir_map['JAVA_COMP_IN_PRIMARY_DIR']}/${baseName}.java"
   def javaFile = new File(javaFilePath)
 
   if( !javaFile.exists() ){
@@ -396,10 +463,14 @@ def node_class_f(node) {
   }
 
   return [
-    status: "matched"
-    ,label: node
-    ,type: "path"
-    ,neighbor: [javaFilePath]
+    status: "matched",
+    label: node,
+    type: "path",  // It's a path node since we're building the .class file
+    neighbor: [javaFilePath],  // The corresponding .java file
+    build: { node, neighbor ->
+        def javac_cmd = "${JAVA_COMP_FP} -d ${dir_map.JAVA_COMP_OUT} -sourcepath ${dir_map.JAVA_COMP_IN_DL} ${neighbor[0]}"
+        javac_cmd.execute().waitFor()
+    }
   ]
 }
 
@@ -426,7 +497,7 @@ def node_jar_f(node) {
     ,label: node
     ,type: "path"
     ,neighbor: [classFilePath]
-    ,build: { node, neighbor ->
+    ,build: { node ,neighbor ->
       println "Building jar for ${baseName}"
       def command = "${ext.javaHome}/bin/jar cf ${baseName}.jar -C ${dir_map['JAVA_COMP_OUT']} ${baseName}.class"
       return command.execute().text;
@@ -434,18 +505,22 @@ def node_jar_f(node) {
   ]
 }
 
-// list of the pattern recognizer functions
+// list of the recognizer functions
 def node_f_list = [
   node_leaf_f
-  ,node)executor_f
+  ,node_executor_f
   ,node_grammar_f
   ,node_class_f
   ,node_jar_f
 ]
 
+// end of DAG definition
 
-// Given a node_label, returns the node or null.
-def lookup(node_label, verbose = false){
+/*--------------------------------------------------------------------------------
+ Given a node_label ,returns the node or null.
+
+*/
+def lookup(node_label ,verbose = false){
   def lookup_node = node_map[node_label]
   if( lookup_node ){
     lookup_node.label = node_label
@@ -459,42 +534,35 @@ def lookup(node_label, verbose = false){
       }
     }
   }
-
   if( !lookup_node ){
-    if( verbose ) println "Lookup error: Node ${node_label} could not be found."
+    if( verbose ) println "lookup:: Node ${node_label} could not be found."
     return null
   }
-
   return lookup_node
 }
 
-// Given a node_label, if found, returns node if it is marked good.
-def lookup_marked_good(node_label, verbose = false){
-  def node = lookup(node_label, verbose)
-  if( node && is_marked_good_q(node) ) return node;
+// mark aware lookup function
+def lookup_marked_good(node_label ,verbose = false){
+  def node = lookup(node_label ,verbose)
+  if( node && marked_good_q(node) ) return node;
   return null;
 }
 
-
-
-
 /*--------------------------------------------------------------------------------
- do_markup_graph checks given a graph, marks nodes in the graph, and returns a set
- potentially with the marks 'given_argument_not_accepted', `wellformed`,
- `acyclic`.
+ A well formed graph checker.  Traverses entire graph and marks nodes
+ that are not well formed or that are part of a cycle.
 
- Well formed nodes are marked, 'wellformed'.  Nodes that are part of a cycle
- are marked 'cycle_member'.
+ This must be run on the graph for `lookup_marked_good` to work.
+*/
 
- */
-
-// Given a node label list. Looks up and marks the nodes in the list. Returns
-// 'all_wellformed' if all nodes are wellformed, otherwise it returns
-// 'exists_malformed'.
-def mark_the_wellformed_f(node_labels, boolean verbose = true){
+/*
+ Given a node label list. Applies well_formed_q to each node and marks the
+ node accordingly. Returns 'all_wellformed' or 'exists_malformed'.
+*/
+def mark_the_wellformed_f(node_label_list ,boolean verbose = true){
   def all_wellformed = true
 
-  def neighbors = node_labels.collect{ neighbor_label ->
+  def neighbors = node_label_list.collect{ neighbor_label ->
     def neighbor_node = lookup(neighbor_label)
     def form_errors = wellformed_q(neighbor_node)
     if(form_errors.isEmpty()){
@@ -518,7 +586,14 @@ def mark_the_wellformed_f(node_labels, boolean verbose = true){
   return all_wellformed ? 'all_wellformed' : 'exists_malformed'
 }
 
-def markup_graph_f_descend(path_stack, boolean verbose = true){
+/*
+ Given a path stack initialized with the path root ,descends to a leaf node
+ while looking for cycles. Marks nodes as 'cycle_member' if a cycle is
+ detected. Marks nodes as `wellformed` if `wellformed_q`.  Returns a set of
+ tokens indicating the status: 'cycle_found' ,'defacto_leaf_node' ,and
+ 'exists_malformed'.
+*/
+def markup_graph_f_descend(path_stack ,boolean verbose = true){
   def ret_value = [] as Set
   def local_path = path_stack.collect{ it[0] }
   def local_node_label = local_path[-1]
@@ -537,14 +612,14 @@ def markup_graph_f_descend(path_stack, boolean verbose = true){
         cycle_node.mark << 'cycle_member'
       }
       if(verbose) println ""
-      // we can not continue searching after the loop so, we pop back to treat
+      // we can not continue searching after the loop so ,we pop back to treat
       // the first node in the loop as though a leaf node.
       path_stack = path_stack[0..cycle_start_index]
       return ret_value
     }
 
     // a 'de-facto' leaf node test subtleties here because we have not yet
-    // determined if the nodes we are wellformed. This is purposeful, as
+    // determined if the nodes we are wellformed. This is purposeful ,as
     // this function does not know about the relationships between the 
     // possible error marks.
     def local_node = lookup(local_node_label)
@@ -554,7 +629,7 @@ def markup_graph_f_descend(path_stack, boolean verbose = true){
     }
 
     // Mark the wellformed nodes and get the result
-    def result = mark_the_wellformed_f(local_node.neighbor, verbose)
+    def result = mark_the_wellformed_f(local_node.neighbor ,verbose)
     if(result == 'exists_malformed'){
       ret_value << 'exists_malformed'
     }
@@ -566,14 +641,19 @@ def markup_graph_f_descend(path_stack, boolean verbose = true){
   }while(true)
 }
 
-// given root_node_labels, marks up graph, returns a set possibly
-// containing 'all_wellformed'  and 'cycles_exist'.
-def markup_graph_f(root_node_labels, boolean verbose = true){
+/*
+ Given root_node_labels ,marks up the graph and returns a set possibly
+ containing 'all_wellformed' and 'cycles_exist'.
+
+ Marks potentially added to each node include  'cycle_member' ,'wellformed'.
+ Note that these marks are independent.
+*/
+def wellformed_graph_q(root_node_labels ,boolean verbose = true){
   def ret_value = [] as Set
   def exists_malformed = false;
 
   // check the root nodes
-  def result = mark_the_wellformed_f(root_node_labels, verbose)
+  def result = mark_the_wellformed_f(root_node_labels ,verbose)
   if(result == 'exists_malformed'){
     ret_value << 'exists_malformed'
   }
@@ -582,10 +662,10 @@ def markup_graph_f(root_node_labels, boolean verbose = true){
   def path_stack = []
   path_stack << root_node_labels.clone()
 
-  // iterate over left side tree descent, not ideal as it starts at the
-  // root each time, but avoids complexity in the cycle detection logic.
+  // iterate over left side tree descent ,not ideal as it starts at the
+  // root each time ,but avoids complexity in the cycle detection logic.
   do{
-    def result = markup_graph_f_descend(path_stack, verbose)
+    def result = markup_graph_f_descend(path_stack ,verbose)
     if('cycle_found' in result) ret_value << 'cycle_exists'
     if('exists_malformed' in result) exists_malformed = true;
 
@@ -607,92 +687,166 @@ def markup_graph_f(root_node_labels, boolean verbose = true){
   return ret_value
 }
 
-// LocalWords:  FN FPL DN DNL RuleNameListRegx RuleNameList PrintVisitorMethod
-// LocalWords:  PrintVisitor SyntaxAnnotate wellformed defacto
+
+/*
+ Given `root_node_labels` of a DAG. Applies `node_function` to each node in a
+ depth-first traversal order.  Returns a set of error tokens encountered
+ during traversal.
+
+ `wellformed_graph_q` must be run on the DAG before this function is called ,or
+ `lookup_marked_good` will not function correctly.
+*/
+def all_DAG_DF(root_node_labels ,node_function ,boolean verbose = true) {
+  def error_token_set = [] as Set
+
+  if (root_node_labels.isEmpty()) return error_token_set
+
+  def visited = [] as Set
+  def in_traversal_order = []
+  def stack = []
+
+  root_node_labels.each { root_label ->
+    stack << root_label
+  }
+
+  do {
+    def node_label = stack.pop()
+    
+    def node = lookup_marked_good(node_label ,verbose)
+    if (!node) {
+      error_token_set << 'lookup_fail'
+      continue
+    }
+
+    if (node.label in visited) continue
+    visited << node.label
+
+    in_traversal_order << node
+
+    node.neighbor.each { neighbor_label ->
+      stack << neighbor_label
+    }
+  } while (!stack.isEmpty())
+
+  in_traversal_order.reverse().each { node ->
+    node_function(node ,error_token_set ,verbose)
+  }
+
+  return error_token_set
+}
+
 
 /*--------------------------------------------------------------------------------
  run the build scripts
    depends upon is_acyclic having already marked up the graph.
-o
-Initialization:
-* visited: A set to keep track of visited nodes.
-* build_order: A list to store the nodes in the order they should be built.
-
-Depth-First Search (DFS):
-* The dfs function performs a depth-first traversal of the graph.
-* It looks up the node using the lookup function.
-* If the node has already been visited, it returns.
-* Otherwise, it marks the node as visited and recursively visits its neighbors.
-* After visiting all neighbors, it adds the node to the build_order list.
-
-Build Script Execution:
-* After the DFS traversal, the build_order list is reversed to ensure that leaf nodes are built first.
-*  The build scripts for each node are executed in the correct order.
-
--- add date checks
-
 */
 
 import java.nio.file.Files
 import java.nio.file.Paths
 
-def good_dependency_q( node ){
-  if( node.type in ['path' ,'leaf'] ){
-    def node_path = Paths.get( node.label )
-    if( !Files.exists( node_path ) ) return false
+// a symbol dependency is good ,as long as it is built before the node in question
+def good_dependency_q(node_labels) {
+  return node_labels.every { node_label ->
+    def node = lookup_marked_good(node_label)
+    if (!node) return false
+    if (node.type in ['path' ,'leaf'] && !file_exists_q(node.label)) return false
+    return true
   }
-  return (
-    node.mark 
-    && ( 'wellformed' in node.mark ) 
-    && !( 'build_failed' in node.mark ) 
-    && !( 'cycle_member' in node.mark )
-  )
 }
 
-def build_status_q( node, verbose = true ){
-  if( node.type == 'leaf' ){
-    def node_path = Paths.get( node.label )
-    if( !Files.exists( node_path ) ){
-      node.mark.add( 'build_failed' ) // so that it will not be a good_dependency
-      if( verbose ) println( "Leaf node ${node.label} is missing." )
-    }
-    return 'leaf'
+/* 
+ Given a node label and a list of node labels ,returns true if the file at the
+ node label in the first argument is newer than all the files at the
+ corresponding node labels in the second list.
+*/
+def newer_than_all(node_label ,node_label_list) {
+  def node_path = Paths.get(node_label)
+  if (!Files.exists(node_path)) return false
+
+  def node_last_modified = Files.getLastModifiedTime(node_path).toMillis()
+
+  return node_label_list.every { label ->
+    def path = Paths.get(label)
+    if (!Files.exists(path)) return false
+    def last_modified = Files.getLastModifiedTime(path).toMillis()
+    return node_last_modified > last_modified
   }
-
-  if( node.type == 'symbol' ){
-    def dependencies = node.neighbor.findAll{ neighbor_label ->
-      def neighbor_node = lookup( neighbor_label )
-      return good_dependency_q( neighbor_node )
-    }
-    if( dependencies.size() != node.neighbor.size() ) return 'dependency_problem'
-    return 'should_build'
-  }
-
-  if( node.type == 'path' ){
-    def node_path = Paths.get( node.label )
-    if( !Files.exists( node_path ) ) return 'should_build'
-
-    def node_last_modified = Files.getLastModifiedTime( node_path ).toMillis()
-
-    def dependencies = node.neighbor.findAll{ neighbor_label ->
-      def neighbor_node = lookup( neighbor_label )
-      return good_dependency_q( neighbor_node )
-    }
-    if( dependencies.size() != node.neighbor.size() ) return 'dependency_problem'
-
-    def dependency_last_modified = dependencies.collect{ neighbor_label ->
-      def neighbor_node = lookup( neighbor_label )
-      def neighbor_path = Paths.get( neighbor_node.label )
-      return Files.getLastModifiedTime( neighbor_path ).toMillis()
-    }
-
-    if( dependency_last_modified.any{ it > node_last_modified } ) return 'should_build'
-  }
-
-  return 'up_to_date'
 }
 
-def run_build_scripts_f( root_node_labels, boolean verbose = true ){
+def can_be_built_q(node){
+  if( !marked_good_q(node) ) return false;
+  if( 
+    (node.type == 'symbol' || type == 'path')
+    && !good_dependency_q( node.neighbor )
+  ){
+    return false
+  }
+  if(
+    node.type == 'leaf'
+    && !file_exists_q(node.label)
+  ){ 
+    return false;
+  }
+  return true
+}
+
+// `can_be_build_q` must be true for this to be meaningful:
+def should_be_built_q(node ,verbose = true) {
+  if(node.type == 'leaf') return false
+  if(node.type == 'symbol') return true
+  if( node.type == 'path') return !newer_than_all(node.label ,node.neighbor)
+  println("should_be_build_q:: unrecognized node type ,so assuming it should not be built.")
+  return false
+}
+
+/*
+ Runs build scripts for the given root_node_labels in a depth-first traversal order.
+ Uses `all_DAG_DF` to traverse the graph and applies the build function to each node.
+
+ Be sure that `wellformed_graph_q` has been run on DAG.
+
+ Be sure that the 'build_failed' marks have been cleared if this is not the
+ first build attempt.
+ 
+*/
+def run_build_scripts_f(root_node_labels ,boolean verbose = true){
+  if( root_node_labels.isEmpty() ) return
+
+  // Define the function to be applied to each node
+  def node_function = { node ,error_token_set ->
+
+    if( !can_be_built_q(node) ){
+      println("Skipping build for ${node.label} due to dependency problems or found leaf is missing")
+      return
+    }
+
+    if( !should_be_built_q(node) ){
+      if(verbose) println("${node.label} already up to date")
+      return
+    }
+
+    // if we get here, node can and should be built
+
+    println("Running build script for ${node.label}")
+    node.build(node ,node.neighbor)
+
+    // Check if the build updated the target file
+    if( should_be_built_q(node) ){
+      println("Build failed for ${node.label}")
+      set_mark(node ,'build_failed')
+    }
+
+  }
+
+  // Apply the function to all nodes in a depth-first manner
+  all_DAG_DF(root_node_labels ,node_function ,verbose)
+}
+
+ 
+
+------------------------------------
+
+def run_build_scripts_f( root_node_labels ,boolean verbose = true ){
   if( root_node_labels.isEmpty() ) return
 
   def visited = [] as Set
@@ -705,13 +859,13 @@ def run_build_scripts_f( root_node_labels, boolean verbose = true ){
 
   do{
     def node_label = stack.pop()
-    def node = lookup( node_label, verbose )
+    def node = lookup( node_label ,verbose )
     if( !node ) continue
 
     if( node.label in visited ) continue
     visited << node.label
 
-    if( !is_marked_good_q( node ) ){
+    if( !marked_good_q( node ) ){
       if( verbose ) println( "Skipping malformed node ${node.label}" )
       continue
     }
@@ -728,13 +882,13 @@ def run_build_scripts_f( root_node_labels, boolean verbose = true ){
   }while( !stack.isEmpty() )
 
   build_order.reverse().each{ node ->
-    def build_status = build_status_q( node, verbose )
+    def build_status = build_status_q( node ,verbose )
     if( build_status == 'should_build' ){
       println( "Running build script for ${node.label}" )
-      node.build( node, node.neighbor )
+      node.build( node ,node.neighbor )
 
       // Check if the build updated the target file
-      if( build_status_q( node, verbose ) == 'should_build' ){
+      if( build_status_q( node ,verbose ) == 'should_build' ){
         println( "Build failed for ${node.label}" )
         node.mark = node.mark ?: [] as Set
         node.mark << 'build_failed'
@@ -748,6 +902,40 @@ def run_build_scripts_f( root_node_labels, boolean verbose = true ){
 }
 
 
+--------------------------------------------------------------------------------
+def clean(nodes_to_clean) {
+  def all_dependencies = node_map["all"].neighbor.clone()
+  nodes_to_clean.each { node ->
+    all_dependencies.remove(node)
+  }
+
+  def must_have_nodes = []
+  all_dependencies.each { node ->
+    def node_info = node_map[node]
+    if (node_info.must_have) {
+      must_have_nodes += node_info.must_have
+    }
+  }
+
+  def to_clean_list = []
+  nodes_to_clean.each { node ->
+    if (!must_have_nodes.contains(node) && node_map[node].type == "path") {
+      to_clean_list += node
+    }
+  }
+
+  to_clean_list.each { node ->
+    def file_path = node_map[node].label
+    def file = new File(file_path)
+    if (file.exists()) {
+      file.delete()
+      println "Deleted file: ${file_path}"
+    }
+  }
+}
+
+
+--------------------------------------------------------------------------------
 def mark_for_clean_q( node ){
   if( node.type == 'leaf' ) return false
 
@@ -762,7 +950,7 @@ def mark_for_clean_q( node ){
   return false
 }
 
-def clean_nodes( root_node_labels, boolean verbose = true ){
+def clean_nodes(root_node_labels ,boolean verbose = true){
   if( root_node_labels.isEmpty() ) return
 
   def visited = [] as Set
@@ -775,13 +963,13 @@ def clean_nodes( root_node_labels, boolean verbose = true ){
 
   do{
     def node_label = stack.pop()
-    def node = lookup( node_label, verbose )
+    def node = lookup( node_label ,verbose )
     if( !node ) continue
 
     if( node.label in visited ) continue
     visited << node.label
 
-    if( !is_marked_good_q( node ) ){
+    if( !marked_good_q( node ) ){
       if( verbose ) println( "Skipping malformed node ${node.label}" )
       continue
     }
@@ -806,7 +994,7 @@ def clean_nodes( root_node_labels, boolean verbose = true ){
       }
       if( can_clean ){
         println( "Cleaning node ${node.label}" )
-        node.clean( node, node.neighbor )
+        node.clean( node ,node.neighbor )
       } else {
         if( verbose ) println( "Skipping node ${node.label} due to dependency problems" )
       }
@@ -817,3 +1005,7 @@ def clean_nodes( root_node_labels, boolean verbose = true ){
     }
   }
 }
+
+
+// LocalWords:  FN FPL DN DNL RuleNameListRegx RuleNameList PrintVisitorMethod
+// LocalWords:  PrintVisitor SyntaxAnnotate wellformed defacto acyclic
