@@ -594,11 +594,3 @@ def clean_nodes(root_node_labels ,boolean verbose = true){
 }
 
 
-// LocalWords:  FN FPL DN DNL RuleNameListRegx RuleNameList PrintVisitorMethod
-// LocalWords:  PrintVisitor SyntaxAnnotate wellformed defacto acyclic
-g
-
-
-
-
-// LocalWords:  wellformed unvisited

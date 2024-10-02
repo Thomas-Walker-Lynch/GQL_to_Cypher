@@ -83,6 +83,8 @@ task installAntlr {
   }
 }
 
+
+// rather circular no?
 task installJava {
   dependsOn preface
   doLast {

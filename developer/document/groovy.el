@@ -15,3 +15,5 @@
   (setq groovy-indent-offset 2)
   )
 
+;; Enable Groovy mode for files with `#!/usr/bin/env groovy` shebang
+(add-to-list 'interpreter-mode-alist '("groovy" . groovy-mode))

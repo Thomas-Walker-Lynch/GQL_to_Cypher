@@ -12,20 +12,18 @@ if [ -z "$REPO_HOME" ]; then
   source "${script_path}/env_base"
 fi
 
-export DEVELOPER_HOME="$REPO_HOME/developers"
-export GRADLE_HOME="$REPO_HOME/toolsmiths/gradle-8.10-rc-1"
+export JAVA_HOME="$REPO_HOME/tool/jdk-11"
+export GRADLE_HOME="$REPO_HOME/tool/gradle-8.10-rc-1"
 
 export PATH=\
-"$DEVELOPER_HOME"/executor\
-:"$REPO_HOME"/toolsmiths/executor\
-:"$GRADLE_HOME"/bin\
+"$REPO_HOME"/developer/executor\
+:"$REPO_HOME"/tool/executor\
+:"$JAVA_HOME"/bin\
+:"$GROOVY_HOME"/bin\
 :"$PATH"
 
-cd "$DEVELOPER_HOME"
-
-# This is helpful so that cut and paste from the makefile to the shell can be used for testing.
-# When making use of this, the developer must resource env_build into the shell after modifications.
-source "$DEVELOPER_HOME"/executor/env_build
+cd "$REPO_HOME/developer"
+source executor/env_build
 
 echo "${BASH_SOURCE[0]}" "complete"
 
